@@ -33,62 +33,62 @@ The following ordered selections represent the mathematically verified Top 10 ba
 ### 1. Top 10 Batters Under Pressure (Dropdown Selections)
 | Rank | Player Name | Player ID | Tactical Archetype | Effective Balls (N_eff) | '26 Balls | Clutch SR | Clutch Avg | Non-Bound SR | Dot % | Match CV | Composite Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1** | **Rajat Patidar** | `5039` | Middle-Order Power Enforcer | 658.4 | 161 | **189.5** | **44.6** | **73.0** | 22.3% | 0.40 | **12.67** |
-| **2** | **Vaibhav Sooryavanshi** | `50284` | Top-Order Boundary Destroyer | 630.6 | 269 | **232.9** | **60.5** | **49.3** | 32.5% | 0.34 | **11.54** |
-| **3** | **Abhishek Sharma** | `6281` | Top-Order Boundary Destroyer | 731.7 | 246 | **196.6** | **36.2** | **60.6** | 30.9% | 0.39 | **11.19** |
-| **4** | **Heinrich Klaasen** | `4260` | Middle-Order Power Enforcer | 1164.0 | 354 | **171.9** | **45.2** | **80.7** | 23.8% | 0.33 | **10.50** |
-| **5** | **Priyansh Arya** | `25669` | Top-Order Boundary Destroyer | 512.8 | 157 | **206.6** | **32.4** | **61.1** | 30.1% | 0.36 | **10.33** |
-| **6** | **Tim David** | `6396` | Death Finisher / Clutch Hitter | 444.3 | 109 | **189.4** | **32.8** | **68.2** | 27.3% | 0.36 | **10.20** |
-| **7** | **Ishan Kishan** | `4117` | Top-Order Dynamic Stroke-Maker | 1026.0 | 311 | **174.0** | **40.7** | **72.0** | 26.3% | 0.36 | **9.81** |
+| **1** | **Rajat Patidar** | `5039` | Middle-Order Power Enforcer | 658.4 | 161 | **189.5** | **44.6** | **73.0** | 22.3% | 0.40 | **12.63** |
+| **2** | **Vaibhav Sooryavanshi** | `50284` | Top-Order Boundary Destroyer | 630.6 | 269 | **232.9** | **60.5** | **49.3** | 32.5% | 0.34 | **11.55** |
+| **3** | **Abhishek Sharma** | `6281` | Top-Order Boundary Destroyer | 731.7 | 246 | **196.6** | **36.2** | **60.6** | 30.9% | 0.39 | **11.16** |
+| **4** | **Heinrich Klaasen** | `4260` | Middle-Order Power Enforcer | 1164.0 | 354 | **171.9** | **45.2** | **80.7** | 23.8% | 0.33 | **10.49** |
+| **5** | **Priyansh Arya** | `25669` | Top-Order Boundary Destroyer | 512.8 | 157 | **206.6** | **32.4** | **61.1** | 30.1% | 0.36 | **10.34** |
+| **6** | **Tim David** | `6396` | Death Finisher / Clutch Hitter | 444.3 | 109 | **189.4** | **32.8** | **68.2** | 27.3% | 0.36 | **10.16** |
+| **7** | **Ishan Kishan** | `4117` | Top-Order Dynamic Stroke-Maker | 1026.0 | 311 | **174.0** | **40.7** | **72.0** | 26.3% | 0.36 | **9.80** |
 | **8** | **Shreyas Iyer** | `3647` | Middle-Order Crisis Rebuilder | 950.9 | 223 | **170.0** | **61.3** | **75.3** | 25.1% | 0.31 | **9.77** |
 | **9** | **Lokesh Rahul** | `953` | Top-Order Anchor / Stabilizer | 1126.6 | 299 | **163.1** | **49.6** | **74.5** | 25.7% | 0.29 | **9.33** |
-| **10** | **Ashutosh Sharma** | `8101` | Death Finisher / Clutch Hitter | 286.6 | 71 | **194.0** | **40.4** | **69.9** | 23.8% | 0.52 | **8.95** |
+| **10** | **Ashutosh Sharma** | `8101` | Death Finisher / Clutch Hitter | 286.6 | 71 | **194.0** | **40.4** | **69.9** | 23.8% | 0.52 | **8.88** |
 
 ### 2. Top 10 Bowlers Under Pressure (Dropdown Selections)
 | Rank | Player Name | Player ID | Tactical Archetype | Effective Balls (N_eff) | '26 Balls | Clutch Econ | Qual Balls/Wkt | Clutch Avg | Match CV | IPL Seasons | Composite Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1** | **Sunil Narine** | `781` | Middle-Phase Hunter | 852.6 | 243 | **7.35** | **19.9** | **24.3** | 0.41 | 5 | **12.05** |
-| **2** | **Bhuvneshwar Kumar** | `360` | Powerplay Containment | 878.7 | 232 | **8.75** | **15.8** | **23.1** | 0.38 | 5 | **10.03** |
-| **3** | **Varun Chakravarthy** | `6256` | Middle-Phase Hunter | 793.7 | 185 | **8.43** | **17.9** | **25.2** | 0.42 | 5 | **9.09** |
-| **4** | **Krunal Pandya** | `4219` | Middle-Phase Hunter | 837.3 | 194 | **8.20** | **19.5** | **26.6** | 0.34 | 5 | **8.42** |
-| **5** | **Kagiso Rabada** | `3628` | Powerplay Containment | 824.6 | 298 | **9.88** | **14.6** | **24.1** | 0.34 | 5 | **8.16** |
-| **6** | **Lungi Ngidi** | `4641` | Powerplay Containment | 477.4 | 208 | **8.58** | **16.3** | **23.4** | 0.41 | 2 | **8.00** |
-| **7** | **Noor Ahmad** | `7967` | Middle-Phase Hunter | 845.0 | 204 | **8.74** | **17.0** | **24.8** | 0.35 | 4 | **7.97** |
-| **8** | **Jasprit Bumrah** | `2933` | Powerplay Containment | 759.8 | 221 | **7.94** | **27.9** | **36.9** | 0.40 | 4 | **7.80** |
-| **9** | **Mohammed Siraj** | `5944` | Powerplay Containment | 996.0 | 293 | **9.61** | **20.2** | **32.4** | 0.34 | 5 | **7.29** |
-| **10** | **Jason Holder** | `2633` | Middle-Phase Hunter | 416.6 | 139 | **8.34** | **14.2** | **19.7** | 0.33 | 3 | **7.11** |
+| **1** | **Sunil Narine** | `781` | Middle-Phase Hunter | 852.6 | 243 | **7.35** | **19.9** | **24.3** | 0.41 | 5 | **12.30** |
+| **2** | **Bhuvneshwar Kumar** | `360` | Powerplay Containment | 878.7 | 232 | **8.75** | **15.8** | **23.1** | 0.38 | 5 | **11.57** |
+| **3** | **Jasprit Bumrah** | `2933` | Powerplay Containment | 759.8 | 221 | **7.94** | **27.9** | **36.9** | 0.40 | 4 | **10.44** |
+| **4** | **Lungi Ngidi** | `4641` | Powerplay Containment | 477.4 | 208 | **8.58** | **16.3** | **23.4** | 0.41 | 2 | **9.32** |
+| **5** | **Varun Chakravarthy** | `6256` | Middle-Phase Hunter | 793.7 | 185 | **8.43** | **17.9** | **25.2** | 0.42 | 5 | **9.07** |
+| **6** | **Kagiso Rabada** | `3628` | Powerplay Containment | 824.5 | 298 | **9.88** | **14.6** | **24.1** | 0.34 | 5 | **8.76** |
+| **7** | **Mohammed Siraj** | `5944` | Powerplay Containment | 996.0 | 293 | **9.62** | **20.2** | **32.4** | 0.34 | 5 | **8.57** |
+| **8** | **Krunal Pandya** | `4219` | Middle-Phase Hunter | 837.3 | 194 | **8.20** | **19.5** | **26.6** | 0.34 | 5 | **8.21** |
+| **9** | **Jofra Archer** | `3298` | Powerplay Containment | 772.6 | 261 | **9.62** | **15.8** | **25.3** | 0.38 | 3 | **8.09** |
+| **10** | **Josh Hazlewood** | `830` | Powerplay Containment | 654.8 | 209 | **9.72** | **15.8** | **25.6** | 0.39 | 4 | **7.73** |
 
 ### 3. Absolute Unified Top 10 Across Both Disciplines
 | Overall Rank | Player Name | Player ID | Primary Discipline | Effective Recency Balls ({	ext{eff}}$) | 2026 IPL Balls | Key Clutch Metric | Composite Clutch Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
-| **1** | **Rajat Patidar** | `5039` | Batter | 658.4 | 161 | **189.5 SR** (44.6 Avg | 73.0 NonBound) | **12.67** |
-| **2** | **Sunil Narine** | `781` | Bowler | 852.6 | 243 | **7.35 Econ** (19.9 Qual Balls/Wkt) | **12.05** |
-| **3** | **Vaibhav Sooryavanshi** | `50284` | Batter | 630.6 | 269 | **232.9 SR** (60.5 Avg | 49.3 NonBound) | **11.54** |
-| **4** | **Abhishek Sharma** | `6281` | Batter | 731.7 | 246 | **196.6 SR** (36.2 Avg | 60.6 NonBound) | **11.19** |
-| **5** | **Heinrich Klaasen** | `4260` | Batter | 1164.0 | 354 | **171.9 SR** (45.2 Avg | 80.7 NonBound) | **10.50** |
-| **6** | **Priyansh Arya** | `25669` | Batter | 512.8 | 157 | **206.6 SR** (32.4 Avg | 61.1 NonBound) | **10.33** |
-| **7** | **Tim David** | `6396` | Batter | 444.3 | 109 | **189.4 SR** (32.8 Avg | 68.2 NonBound) | **10.20** |
-| **8** | **Bhuvneshwar Kumar** | `360` | Bowler | 878.7 | 232 | **8.75 Econ** (15.8 Qual Balls/Wkt) | **10.03** |
-| **9** | **Ishan Kishan** | `4117` | Batter | 1026.0 | 311 | **174.0 SR** (40.7 Avg | 72.0 NonBound) | **9.81** |
-| **10** | **Shreyas Iyer** | `3647` | Batter | 950.9 | 223 | **170.0 SR** (61.3 Avg | 75.3 NonBound) | **9.77** |
+| **1** | **Rajat Patidar** | `5039` | Batter | 658.4 | 161 | **189.5 SR** (44.6 Avg | 73.0 NonBound) | **12.63** |
+| **2** | **Sunil Narine** | `781` | Bowler | 852.6 | 243 | **7.35 Econ** (19.9 Qual Balls/Wkt) | **12.30** |
+| **3** | **Bhuvneshwar Kumar** | `360` | Bowler | 878.7 | 232 | **8.75 Econ** (15.8 Qual Balls/Wkt) | **11.57** |
+| **4** | **Vaibhav Sooryavanshi** | `50284` | Batter | 630.6 | 269 | **232.9 SR** (60.5 Avg | 49.3 NonBound) | **11.55** |
+| **5** | **Abhishek Sharma** | `6281` | Batter | 731.7 | 246 | **196.6 SR** (36.2 Avg | 60.6 NonBound) | **11.16** |
+| **6** | **Heinrich Klaasen** | `4260` | Batter | 1164.0 | 354 | **171.9 SR** (45.2 Avg | 80.7 NonBound) | **10.49** |
+| **7** | **Jasprit Bumrah** | `2933` | Bowler | 759.8 | 221 | **7.94 Econ** (27.9 Qual Balls/Wkt) | **10.44** |
+| **8** | **Priyansh Arya** | `25669` | Batter | 512.8 | 157 | **206.6 SR** (32.4 Avg | 61.1 NonBound) | **10.34** |
+| **9** | **Tim David** | `6396` | Batter | 444.3 | 109 | **189.4 SR** (32.8 Avg | 68.2 NonBound) | **10.16** |
+| **10** | **Ishan Kishan** | `4117` | Batter | 1026.0 | 311 | **174.0 SR** (40.7 Avg | 72.0 NonBound) | **9.80** |
 
 ---
 
 ## 🎯 Rajasthan Royals Mini-Auction Board (IPL 2027 Actionable Targets)
 | Rank | Player Name | Player ID | Discipline | Tactical Archetype | Global Clutch Score | Age '27 | IPL Avail % | ADF Factor | '27 Projected Score | SMS Jaipur Fit | RR Compatibility Index | Auction Priority Tier | Estimated Price | ROI Value per Cr |
 | :---: | :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
-| **1** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | **12.67** | 34 | 85.7% | 1.03 | **12.78** | 6.88 | **13.15** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.32** |
-| **2** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | **10.20** | 31 | 82.9% | 1.03 | **10.51** | 7.61 | **12.02** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.41** |
-| **3** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | **10.50** | 36 | 96.4% | 1.03 | **10.16** | 5.73 | **10.45** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.04** |
-| **4** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | **8.95** | 29 | 61.9% | 1.00 | **8.95** | 4.26 | **9.30** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.09** |
-| **5** | **Kagiso Rabada** | `3628` | Bowler | Powerplay Containment | **8.16** | 32 | 72.9% | 1.00 | **8.00** | 5.31 | **9.12** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.22** |
-| **6** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | **7.29** | 33 | 107.1% | 1.03 | **7.36** | 5.89 | **9.12** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.22** |
-| **7** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter | **7.97** | 22 | 91.1% | 1.03 | **8.70** | 6.44 | **8.86** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.48** |
-| **8** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | **10.03** | 37 | 105.7% | 1.03 | **9.10** | 3.58 | **8.68** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.16** |
-| **9** | **Shreyas Iyer** | `3647` | Batter | Middle-Order Crisis Rebuilder | **9.77** | 33 | 103.6% | 1.03 | **9.87** | 4.74 | **8.53** | Tier 3: Tactical Depth / Trade Option | ₹7.0 Cr | **1.22** |
-| **10** | **Priyansh Arya** | `25669` | Batter | Top-Order Boundary Destroyer | **10.33** | 26 | 110.7% | 1.00 | **10.33** | 9.75 | **8.52** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.70** |
-| **11** | **Abhishek Sharma** | `6281` | Batter | Top-Order Boundary Destroyer | **11.19** | 27 | 98.6% | 1.03 | **11.53** | 8.38 | **8.50** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.70** |
-| **12** | **Varun Chakravarthy** | `6256` | Bowler | Middle-Phase Hunter | **9.09** | 36 | 90.0% | 1.03 | **8.71** | 5.43 | **8.48** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.41** |
+| **1** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | **12.63** | 34 | 85.7% | 1.03 | **12.75** | 6.88 | **13.13** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.31** |
+| **2** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | **10.16** | 31 | 82.9% | 1.03 | **10.46** | 7.61 | **11.98** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.41** |
+| **3** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | **10.49** | 36 | 96.4% | 1.03 | **10.16** | 5.73 | **10.44** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.04** |
+| **4** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | **8.57** | 33 | 107.1% | 1.03 | **8.65** | 5.89 | **10.04** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.34** |
+| **5** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | **11.57** | 37 | 105.7% | 1.03 | **10.49** | 3.58 | **9.67** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.29** |
+| **6** | **Kagiso Rabada** | `3628` | Bowler | Powerplay Containment | **8.76** | 32 | 72.9% | 1.00 | **8.58** | 5.31 | **9.54** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.27** |
+| **7** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | **8.88** | 29 | 61.9% | 1.00 | **8.88** | 4.26 | **9.25** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.09** |
+| **8** | **Josh Hazlewood** | `830` | Bowler | Powerplay Containment | **7.73** | 36 | 71.4% | 1.00 | **6.80** | 6.28 | **8.82** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.18** |
+| **9** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter | **7.67** | 22 | 91.1% | 1.03 | **8.38** | 6.44 | **8.64** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.44** |
+| **10** | **Shreyas Iyer** | `3647` | Batter | Middle-Order Crisis Rebuilder | **9.77** | 33 | 103.6% | 1.03 | **9.86** | 4.74 | **8.53** | Tier 3: Tactical Depth / Trade Option | ₹7.0 Cr | **1.22** |
+| **11** | **Priyansh Arya** | `25669` | Batter | Top-Order Boundary Destroyer | **10.34** | 26 | 110.7% | 1.00 | **10.34** | 9.75 | **8.52** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.70** |
+| **12** | **Abhishek Sharma** | `6281` | Batter | Top-Order Boundary Destroyer | **11.16** | 27 | 98.6% | 1.03 | **11.50** | 8.38 | **8.49** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.70** |
 
 ---
 

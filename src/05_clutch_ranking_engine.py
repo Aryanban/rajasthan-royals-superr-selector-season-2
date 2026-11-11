@@ -143,6 +143,7 @@ def run_clutch_ranking_engine():
     h_hp['w_bounds_bw'] = h_hp['is_boundary'] * h_hp['deliv_w_bowl']
     h_hp['w_surplus_bw'] = h_hp['runs_saved_vs_par'] * h_hp['deliv_w_bowl']
     h_hp['w_wpa_bw'] = h_hp['delta_wp_bowl'] * h_hp['deliv_w_bowl']
+    h_hp['w_death_bw'] = (h_hp['overid'] >= 16) * h_hp['w_balls_bw']
 
     # Platoon splits: vs RHB vs LHB (Calibration 11)
     h_hp['w_balls_rhb'] = (h_hp['batting_type'] == 'RHB') * h_hp['w_balls_bw']
@@ -168,6 +169,7 @@ def run_clutch_ranking_engine():
         eff_runs_rhb=('w_runs_rhb', 'sum'),
         eff_balls_lhb=('w_balls_lhb', 'sum'),
         eff_runs_lhb=('w_runs_lhb', 'sum'),
+        eff_death_balls=('w_death_bw', 'sum'),
     ).reset_index()
 
     bowl_summary['b26_balls'] = bowl_summary['bowler_id'].map(balls_26_bowl).fillna(0)
@@ -250,7 +252,9 @@ def run_clutch_ranking_engine():
     norm_strike = np.clip((bowl_summary['shrunk_wkt_rate'] - 3.33) / 5.0 * 10.0, 0.0, 10.0)
     norm_bowl_avg = np.clip((42.0 - bowl_summary['shrunk_bowl_avg']) / 24.0 * 10.0, 0.0, 10.0)
 
-    raw_quality_bowl = norm_dot * 0.25 + norm_avoid * 0.20 + norm_surplus * 0.20 + norm_strike * 0.20 + norm_bowl_avg * 0.15
+    # Calibration 14: Phase-Difficulty Leverage Normalization & The "Respect Tax" Correction
+    # Rebalance process vs wickets: Dot 30%, Boundary Avoid 20%, Surplus Runs 25%, Strike Rate 20%, Avg 5%
+    raw_quality_bowl = norm_dot * 0.30 + norm_avoid * 0.20 + norm_surplus * 0.25 + norm_strike * 0.20 + norm_bowl_avg * 0.05
 
     # 350 effective balls required for full confidence (scaled for superlinear volume)
     bowl_summary['sample_confidence'] = np.clip(bowl_summary['eff_balls'] / 350.0, 0.0, 1.0)
@@ -288,13 +292,26 @@ def run_clutch_ranking_engine():
     bowl_summary['cv_econ'] = bowl_summary['bowler_id'].map(bowl_cv_map).fillna(0.45)
     bowl_summary['stability_factor'] = 1.0 + 0.10 * np.clip((0.45 - bowl_summary['cv_econ']) / 0.20, -1.0, 1.0)
 
-    # Composite Score with Calibrations 10, 11 & 12
+    # Calibration 14: Phase Difficulty Leverage Multiplier (PDL)
+    # High-pressure death overs (16-20) carry the highest win-probability volatility and execution difficulty
+    bowl_summary['death_ratio'] = bowl_summary['eff_death_balls'] / np.maximum(bowl_summary['eff_balls'], 1.0)
+    bowl_summary['phase_difficulty_factor'] = 1.0 + 0.18 * np.clip((bowl_summary['death_ratio'] - 0.15) / 0.25, 0.0, 1.0)
+
+    # Calibration 14: Phase-Adjusted Scoreboard Elasticity for Death Bowlers
+    bowl_summary['elasticity_factor_adj'] = np.where(
+        (bowl_summary['death_ratio'] >= 0.25) & (bowl_summary['rec_clutch_econ'] < 8.5),
+        np.maximum(bowl_summary['elasticity_factor'], 1.03),
+        bowl_summary['elasticity_factor']
+    )
+
+    # Composite Score with Calibrations 10, 11, 12 & 14
     bowl_summary['composite_score_a'] = (
         raw_quality_bowl * bowl_summary['sample_confidence'] * bowl_summary['form_factor'] *
         bowl_summary['durability_bonus'] * bowl_summary['reg_factor'] *
         bowl_summary['continuity_factor'] * bowl_summary['pedigree_bonus'] *
         bowl_summary['stability_factor'] * bowl_summary['xfip_factor'] *
-        bowl_summary['platoon_neutrality_factor'] * bowl_summary['elasticity_factor']
+        bowl_summary['platoon_neutrality_factor'] * bowl_summary['elasticity_factor_adj'] *
+        bowl_summary['phase_difficulty_factor']
     )
     bowl_summary['composite_score_b'] = bowl_summary['composite_score_a']
 
