@@ -32,39 +32,39 @@ The following ordered selections represent the mathematically verified Top 10 ba
 
 ### 1. Top 10 Batters Under Pressure (Dropdown Selections)
 
-| Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{\text{eff}}$) | 2026 IPL Balls | Recency Clutch SR | Recency Clutch Avg | 2026 Clutch SR | IPL Seasons | Composite Score |
-| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1** | **Vaibhav Sooryavanshi** | `50284` | Top-Order Boundary Destroyer | 325.5 | 269 | **228.6** | **58.8** | **231.2** | 2 | **10.85** |
-| **2** | **Abhishek Sharma** | `6281` | Top-Order Boundary Destroyer | 431.4 | 246 | **197.2** | **37.2** | **207.7** | 5 | **10.51** |
-| **3** | **Rajat Patidar** | `5039` | Middle-Order Power Enforcer | 301.3 | 161 | **184.1** | **42.3** | **208.7** | 4 | **9.40** |
-| **4** | **Tim David** | `6396` | Death Finisher / Clutch Hitter | 203.0 | 109 | **189.7** | **34.6** | **204.6** | 5 | **9.06** |
-| **5** | **Shreyas Iyer** | `3647` | Middle-Order Crisis Rebuilder | 452.2 | 223 | **166.1** | **59.2** | **162.8** | 4 | **8.75** |
-| **6** | **Priyansh Arya** | `25669` | Top-Order Boundary Destroyer | 296.7 | 157 | **207.4** | **34.2** | **226.8** | 2 | **8.72** |
-| **7** | **Heinrich Klaasen** | `4260` | Middle-Order Power Enforcer | 532.8 | 354 | **171.1** | **46.6** | **163.3** | 4 | **8.71** |
-| **8** | **Mitchell Marsh** | `818` | Top-Order Anchor / Stabilizer | 499.1 | 288 | **165.9** | **47.6** | **168.1** | 5 | **8.32** |
-| **9** | **Prabhsimran Singh** | `7216` | Top-Order Dynamic Stroke-Maker | 488.6 | 247 | **169.5** | **42.8** | **177.3** | 5 | **8.19** |
-| **10** | **Lokesh Rahul** | `953` | Top-Order Anchor / Stabilizer | 589.0 | 299 | **160.9** | **50.3** | **179.3** | 5 | **8.17** |
+| Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{\text{eff}}$) | 2026 IPL Balls | Recency Clutch SR | Recency Clutch Avg | SR vs Spin | SR vs Pace | 2026 Clutch SR | IPL Seasons | Composite Score |
+| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1** | **Vaibhav Sooryavanshi** | `50284` | Top-Order Boundary Destroyer | 431.3 | 269 | **230.8** | **62.1** | **205.6** | **236.8** | **231.2** | 2 | **12.06** |
+| **2** | **Abhishek Sharma** | `6281` | Top-Order Boundary Destroyer | 537.4 | 246 | **196.4** | **37.0** | **224.8** | **183.0** | **207.7** | 5 | **11.19** |
+| **3** | **Rajat Patidar** | `5039` | Middle-Order Power Enforcer | 386.1 | 161 | **185.7** | **43.2** | **190.7** | **183.4** | **208.7** | 4 | **10.31** |
+| **4** | **Priyansh Arya** | `25669` | Top-Order Boundary Destroyer | 379.5 | 157 | **207.1** | **33.5** | **222.4** | **203.6** | **226.8** | 2 | **9.92** |
+| **5** | **Tim David** | `6396` | Death Finisher / Clutch Hitter | 250.7 | 109 | **188.9** | **33.4** | **164.6** | **196.6** | **204.6** | 5 | **9.26** |
+| **6** | **Ashutosh Sharma** | `8101` | Death Finisher / Clutch Hitter | 168.8 | 71 | **191.6** | **42.7** | **148.2** | **205.2** | **193.0** | 3 | **8.74** |
+| **7** | **Shreyas Iyer** | `3647` | Middle-Order Crisis Rebuilder | 581.0 | 223 | **167.7** | **62.3** | **158.9** | **173.0** | **162.8** | 4 | **8.59** |
+| **8** | **Heinrich Klaasen** | `4260` | Middle-Order Power Enforcer | 668.1 | 354 | **170.8** | **46.3** | **175.4** | **167.9** | **163.3** | 4 | **8.47** |
+| **9** | **Mitchell Marsh** | `818` | Top-Order Anchor / Stabilizer | 617.1 | 288 | **166.1** | **47.7** | **147.0** | **175.3** | **168.1** | 5 | **8.38** |
+| **10** | **Prabhsimran Singh** | `7216` | Top-Order Dynamic Stroke-Maker | 634.0 | 247 | **169.8** | **43.1** | **162.5** | **172.4** | **177.3** | 5 | **8.30** |
 
-*Audited Outliers:* **Ryan Rickelton** drops to **Rank #13**; **Josh Inglis** drops to **Rank #14**; **Marcus Stoinis** drops to **Rank #28**; **Andre Russell** sits at **Rank #70**; **Suryakumar Yadav** sits at **Rank #31**.
+*Audited Outliers:* **Ryan Rickelton** drops to **Rank #13 (Score: 7.47)**; **Josh Inglis** drops to **Rank #14 (Score: 7.23)**; **Marcus Stoinis** drops to **Rank #36 (Score: 4.87)**; **Andre Russell** sits at **Rank #67 (Score: 2.62)**; **Suryakumar Yadav** sits at **Rank #31 (Score: 5.41)**.
 
 ---
 
 ### 2. Top 10 Bowlers Under Pressure (Dropdown Selections)
 
 | Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{\text{eff}}$) | 2026 IPL Balls | Recency Clutch Econ | Clutch Strike Rate (Balls/Wkt) | Clutch Bowling Avg | 2026 Clutch Econ | IPL Seasons | Composite Score |
-| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1** | **Sunil Narine** | `781` | Middle-Phase Hunter | 418.8 | 243 | **7.27** | **22.1** | **26.8** | **6.91** | 5 | **9.65** |
-| **2** | **Bhuvneshwar Kumar** | `360` | Powerplay Containment | 455.2 | 232 | **8.51** | **17.0** | **24.2** | **7.76** | 5 | **8.73** |
-| **3** | **Varun Chakravarthy** | `6256` | Middle-Phase Hunter | 389.2 | 185 | **8.49** | **20.5** | **29.0** | **8.53** | 5 | **6.37** |
-| **4** | **Jasprit Bumrah** | `2933` | Powerplay Containment | 384.2 | 221 | **8.02** | **30.1** | **40.2** | **8.71** | 4 | **6.32** |
-| **5** | **Kagiso Rabada** | `3628` | Powerplay Containment | 428.4 | 298 | **9.74** | **16.6** | **26.9** | **9.48** | 5 | **6.20** |
-| **6** | **Mohammed Siraj** | `5944` | Powerplay Containment | 535.2 | 293 | **9.18** | **22.2** | **34.0** | **8.97** | 5 | **6.08** |
-| **7** | **Lungi Ngidi** | `4641` | Powerplay Containment | 238.6 | 208 | **8.56** | **18.0** | **25.6** | **8.37** | 2 | **5.91** |
-| **8** | **Mohsin Khan** | `6669` | Powerplay Containment | 205.6 | 139 | **8.98** | **17.0** | **25.4** | **8.68** | 4 | **5.87** |
-| **9** | **Noor Ahmad** | `7967` | Middle-Phase Hunter | 397.8 | 204 | **8.62** | **18.9** | **27.2** | **9.00** | 4 | **5.86** |
-| **10** | **Josh Hazlewood** | `830` | Powerplay Containment | 326.1 | 209 | **9.53** | **17.7** | **28.1** | **9.85** | 4 | **5.69** |
+| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **1** | **Sunil Narine** | `781` | Middle-Phase Hunter | 531.3 | 243 | **7.26** | **22.0** | **26.7** | **6.91** | 5 | **10.40** |
+| **2** | **Bhuvneshwar Kumar** | `360` | Powerplay Containment | 581.7 | 232 | **8.49** | **16.9** | **23.9** | **7.76** | 5 | **9.23** |
+| **3** | **Varun Chakravarthy** | `6256` | Middle-Phase Hunter | 485.6 | 185 | **8.52** | **20.5** | **29.2** | **8.53** | 5 | **6.99** |
+| **4** | **Jasprit Bumrah** | `2933` | Powerplay Containment | 489.8 | 221 | **8.01** | **30.3** | **40.4** | **8.71** | 4 | **6.94** |
+| **5** | **Kagiso Rabada** | `3628` | Powerplay Containment | 545.0 | 298 | **9.74** | **16.6** | **27.0** | **9.48** | 5 | **6.74** |
+| **6** | **Krunal Pandya** | `4219` | Middle-Phase Hunter | 497.3 | 194 | **8.15** | **21.8** | **29.6** | **9.06** | 5 | **6.49** |
+| **7** | **Lungi Ngidi** | `4641` | Powerplay Containment | 290.7 | 208 | **8.50** | **17.6** | **24.9** | **8.37** | 2 | **6.49** |
+| **8** | **Mohammed Siraj** | `5944` | Powerplay Containment | 689.0 | 293 | **9.23** | **22.5** | **34.7** | **8.97** | 5 | **6.27** |
+| **9** | **Josh Hazlewood** | `830` | Powerplay Containment | 420.2 | 209 | **9.56** | **17.4** | **27.7** | **9.85** | 4 | **6.25** |
+| **10** | **Noor Ahmad** | `7967` | Middle-Phase Hunter | 499.7 | 204 | **8.65** | **19.1** | **27.6** | **9.00** | 4 | **6.21** |
 
-*Audited Outliers:* **Jason Holder** drops to **Rank #13 (Score: 5.36)** due to a 2-year hiatus (0 balls in 2024 and 2025) and lower wicket conversion; **Jofra Archer** sits at **Rank #12 (Score: 5.56)**; **Krunal Pandya** sits at **Rank #11 (Score: 5.57)**; **Saurabh Dubey** drops to **Rank #58**; **Harshal Patel** sits at **Rank #68**.
+*Audited Outliers:* **Jason Holder** drops to **Rank #13 (Score: 5.96)** due to a 2-year hiatus (0 balls in 2024 and 2025) and lower wicket conversion; **Jofra Archer** sits at **Rank #12 (Score: 6.02)**; **Saurabh Dubey** drops to **Rank #58**; **Harshal Patel** sits at **Rank #68**.
 
 ---
 
@@ -72,32 +72,40 @@ The following ordered selections represent the mathematically verified Top 10 ba
 
 | Overall Rank | Player Name | Player ID | Primary Discipline | Effective Recency Balls ($N_{\text{eff}}$) | 2026 IPL Balls | Key Clutch Metric | Composite Clutch Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
-| **1** | **Vaibhav Sooryavanshi** | `50284` | Batter | 325.5 | 269 | **228.6 SR** (58.8 Avg) | **10.85** |
-| **2** | **Abhishek Sharma** | `6281` | Batter | 431.4 | 246 | **197.2 SR** (37.2 Avg) | **10.51** |
-| **3** | **Sunil Narine** | `781` | Bowler | 418.8 | 243 | **7.27 Econ** (22.1 b/wkt) | **9.65** |
-| **4** | **Rajat Patidar** | `5039` | Batter | 301.3 | 161 | **184.1 SR** (42.3 Avg) | **9.40** |
-| **5** | **Tim David** | `6396` | Batter | 203.0 | 109 | **189.7 SR** (34.6 Avg) | **9.06** |
-| **6** | **Shreyas Iyer** | `3647` | Batter | 452.2 | 223 | **166.1 SR** (59.2 Avg) | **8.75** |
-| **7** | **Bhuvneshwar Kumar** | `360` | Bowler | 455.2 | 232 | **8.51 Econ** (17.0 b/wkt) | **8.73** |
-| **8** | **Priyansh Arya** | `25669` | Batter | 296.7 | 157 | **207.4 SR** (34.2 Avg) | **8.72** |
-| **9** | **Heinrich Klaasen** | `4260` | Batter | 532.8 | 354 | **171.1 SR** (46.6 Avg) | **8.71** |
-| **10** | **Mitchell Marsh** | `818` | Batter | 499.1 | 288 | **165.9 SR** (47.6 Avg) | **8.32** |
+| **1** | **Vaibhav Sooryavanshi** | `50284` | Batter | 431.3 | 269 | **230.8 SR** (62.1 Avg) | **12.06** |
+| **2** | **Abhishek Sharma** | `6281` | Batter | 537.4 | 246 | **196.4 SR** (37.0 Avg) | **11.19** |
+| **3** | **Sunil Narine** | `781` | Bowler | 531.3 | 243 | **7.26 Econ** (22.0 b/wkt) | **10.40** |
+| **4** | **Rajat Patidar** | `5039` | Batter | 386.1 | 161 | **185.7 SR** (43.2 Avg) | **10.31** |
+| **5** | **Priyansh Arya** | `25669` | Batter | 379.5 | 157 | **207.1 SR** (33.5 Avg) | **9.92** |
+| **6** | **Tim David** | `6396` | Batter | 250.7 | 109 | **188.9 SR** (33.4 Avg) | **9.26** |
+| **7** | **Bhuvneshwar Kumar** | `360` | Bowler | 581.7 | 232 | **8.49 Econ** (16.9 b/wkt) | **9.23** |
+| **8** | **Ashutosh Sharma** | `8101` | Batter | 168.8 | 71 | **191.6 SR** (42.7 Avg) | **8.74** |
+| **9** | **Shreyas Iyer** | `3647` | Batter | 581.0 | 223 | **167.7 SR** (62.3 Avg) | **8.59** |
+| **10** | **Heinrich Klaasen** | `4260` | Batter | 668.1 | 354 | **170.8 SR** (46.3 Avg) | **8.47** |
 
 ---
 
 ## 🎯 Rajasthan Royals Mini-Auction Board (IPL 2027 Actionable Targets)
 
-Because IPL 2027 is a **Mini-Auction** following the 2025 mega-cycle, core franchise pillars (**Sanju Samson, Yashasvi Jaiswal, Riyan Parag, Shimron Hetmyer, Dhruv Jurel, Sandeep Sharma**) are contracted and retained. 
+Because IPL 2027 is a **Mini-Auction** following the 2025 mega-cycle, core franchise pillars (**Sanju Samson, Yashasvi Jaiswal, Riyan Parag, Shimron Hetmyer, Dhruv Jurel, Sandeep Sharma, Vaibhav Sooryavanshi**) are contracted and retained. 
 
-We cross-referenced our mathematical rankings against contract statuses to identify high-ROI auction/trade acquisitions to resolve Rajasthan Royals' critical squad deficits:
+We developed the **Rajasthan Royals Personalization & Tactical Optimization Engine (RR-PTOE)**, mapping SMS Jaipur pitch conditions and 5 specific squad voids to identify realistic, high-ROI auction acquisitions:
 
-| Target Tier | Player Name | Player ID | Discipline | Clutch Score | Tactical Fit for Rajasthan Royals | Acquisition Route |
-| :--- | :--- | :---: | :---: | :---: | :--- | :--- |
-| **Priority 1 (Death Hitting)** | **Tim David** | `6396` | Finisher (RHB) | **5.65** | Provides explosive death-overs firepower alongside Shimron Hetmyer (204.6 clutch SR in 2026). | Mini-Auction / Trade |
-| **Priority 2 (Pace/Spin All-Rounder)** | **Krunal Pandya** | `4219` | Spin All-Rounder | **6.16** | Proven middle-overs containment (8.25 recency economy) and lower-order clutch batting. | Trade Target |
-| **Priority 3 (Powerplay Swing Foil)** | **Bhuvneshwar Kumar** | `360` | Swing/Seam Pacer | **8.85** | Veteran new-ball foil for Sandeep Sharma. 7.76 economy in 2026 high pressure. Perfect for Jaipur. | Trade Target |
-| **Priority 4 (Hit-the-Deck Pacer)** | **Lungi Ngidi** | `4641` | Fast Bowler | **6.22** | Heavy ball, 8.37 clutch economy in 2026. High wicket conversion rate in death overs. | Mini-Auction |
-| **Priority 5 (Express Death Specialist)** | **Josh Hazlewood** | `830` | Fast Bowler | **5.89** | Relentless back-of-a-length execution and discipline under high pressure. | Mini-Auction |
+| Rank | Target Tier | Player Name | Player ID | Discipline | Tactical Archetype | RR Deficit Fit | RR Compatibility Index | Est. Price | Value ROI / Cr |
+| :---: | :--- | :--- | :---: | :---: | :--- | :--- | :---: | :---: | :---: |
+| 1 | **Tier 1: Primary Target** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | Void 3: Spin Enforcer (#4/5) | **11.36** | ₹10.0 Cr | **1.14** |
+| 2 | **Tier 1: Primary Target** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | **11.09** | ₹8.5 Cr | **1.30** |
+| 3 | **Tier 1: Primary Target** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | Void 3: Spin Enforcer (#4/5) | **9.28** | ₹10.0 Cr | **0.93** |
+| 4 | **Tier 1: Primary Target** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | **9.27** | ₹8.5 Cr | **1.09** |
+| 5 | **Tier 1: Primary Target** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | **8.40** | ₹7.5 Cr | **1.12** |
+| 6 | **Tier 2: Domestic Steal** | **Donovan Ferreira** | `8182` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | **9.25** | ₹3.5 Cr | **2.64** |
+| 7 | **Tier 2: Domestic Steal** | **Josh Hazlewood** | `830` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | **8.42** | ₹4.0 Cr | **2.10** |
+| 8 | **Tier 2: Domestic Steal** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | **8.31** | ₹4.0 Cr | **2.08** |
+| 9 | **Tier 2: Domestic Steal** | **Kagiso Rabada** | `3628` | Bowler | Powerplay Containment / Death | Void 2/4: Express Death Enforcer | **8.13** | ₹4.0 Cr | **2.03** |
+| 10 | **Tier 2: Domestic Steal** | **Mohsin Khan** | `6669` | Bowler | Powerplay Containment | Void 2: Left-Arm Seam Bounce | **7.61** | ₹4.0 Cr | **1.90** |
+| 11 | **Tier 2: Domestic Steal** | **Krunal Pandya** | `4219` | Bowler | Middle-Phase Hunter / Spin | Void 5: Mystery Spin / Squeeze | **7.11** | ₹6.0 Cr | **1.18** |
+| 12 | **Tier 2: Domestic Steal** | **Varun Chakravarthy** | `6256` | Bowler | Middle-Phase Hunter / Spin | Void 5: Mystery Spin / Squeeze | **6.95** | ₹6.0 Cr | **1.16** |
+| 13 | **Tier 2: Domestic Steal** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter / Spin | Void 5: Mystery Spin / Squeeze | **6.92** | ₹6.0 Cr | **1.15** |
 
 ---
 

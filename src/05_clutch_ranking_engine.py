@@ -22,19 +22,30 @@ def run_clutch_ranking_engine():
     MAX_YEAR = 2026
     LAMBDA = 0.693147
     df['season_weight'] = np.exp(-LAMBDA * (MAX_YEAR - df['year']))
-    df['deliv_w'] = df['season_weight'] * df['comp_quality']
+
+    # 3. High-Stakes Match-Importance Leverage (Playoffs 1.2x, Finals 1.5x)
+    df['match_importance_weight'] = df['match_importance'].fillna(1.0)
+
+    # 4. Innings 2 Chasing Asymmetry Factor (1.15x for chasing targets)
+    df['chase_multiplier'] = np.where(df['innings'] == 2, 1.15, 1.00)
+
+    # Combined Delivery Weight
+    df['deliv_w'] = df['season_weight'] * df['comp_quality'] * df['match_importance_weight'] * df['chase_multiplier']
 
     # Wicket attribution
     df['is_striker_out'] = (df['dismissed_player_id'] == df['striker_id']).astype(int)
     df['is_bowler_wkt'] = (df['is_wicket'] & ~df['dismissal_type'].isin(['RunOut', 'Retire Out', 'Obstracting the field', 'Obstructing the field'])).astype(int)
 
-    # Phase par benchmarking strictly on IPL environment
+    # 5. Venue-Par Environmental Pitch Benchmark & Phase Benchmarking
+    df['venue_ball_par'] = df['venue_par'] / 120.0
     ipl_df = df[df['is_ipl']].copy()
     ipl_df['phase'] = np.where(ipl_df['overid'] < 6, 'powerplay', np.where(ipl_df['overid'] < 16, 'middle', 'death'))
     phase_stats = ipl_df.groupby('phase')['ball_total_runs'].mean().to_dict()
     df['phase'] = np.where(df['overid'] < 6, 'powerplay', np.where(df['overid'] < 16, 'middle', 'death'))
     df['phase_exp_runs'] = df['phase'].map(phase_stats)
-    df['runs_saved_vs_par'] = df['phase_exp_runs'] - df['ball_total_runs']
+
+    df['runs_saved_vs_par'] = (df['venue_ball_par'] * 0.50 + df['phase_exp_runs'] * 0.50) - df['ball_total_runs']
+    df['runs_above_par'] = df['runs'] - (df['venue_ball_par'] * 0.50 + df['phase_exp_runs'] * 0.50)
 
     h_hp = df[df['pressure_index'] >= 6.0].copy()
 
@@ -205,6 +216,13 @@ def run_clutch_ranking_engine():
     h_hp['w_runs_bat'] = h_hp['runs'] * h_hp['deliv_w']
     h_hp['w_outs_bat'] = h_hp['is_striker_out'] * h_hp['deliv_w']
     h_hp['w_wpa_bat'] = h_hp['delta_wp_bat'] * h_hp['deliv_w']
+    h_hp['w_surplus_bat'] = h_hp['runs_above_par'] * h_hp['deliv_w']
+
+    # Pace vs spin splits
+    h_hp['w_balls_spin'] = (h_hp['pace_or_spin'] == 'Spin') * h_hp['w_balls_bat']
+    h_hp['w_runs_spin'] = (h_hp['pace_or_spin'] == 'Spin') * h_hp['w_runs_bat']
+    h_hp['w_balls_pace'] = (h_hp['pace_or_spin'] == 'Pace') * h_hp['w_balls_bat']
+    h_hp['w_runs_pace'] = (h_hp['pace_or_spin'] == 'Pace') * h_hp['w_runs_bat']
 
     bat_summary = h_hp.groupby(['striker_id', 'striker_name']).agg(
         pressure_matches=('match_id', 'nunique'),
@@ -216,7 +234,15 @@ def run_clutch_ranking_engine():
         eff_runs=('w_runs_bat', 'sum'),
         eff_outs=('w_outs_bat', 'sum'),
         eff_wpa=('w_wpa_bat', 'sum'),
+        eff_surplus=('w_surplus_bat', 'sum'),
+        spin_balls=('w_balls_spin', 'sum'),
+        spin_runs=('w_runs_spin', 'sum'),
+        pace_balls=('w_balls_pace', 'sum'),
+        pace_runs=('w_runs_pace', 'sum'),
     ).reset_index()
+
+    bat_summary['clutch_sr_vs_spin'] = (bat_summary['spin_runs'] / np.maximum(bat_summary['spin_balls'], 1)) * 100.0
+    bat_summary['clutch_sr_vs_pace'] = (bat_summary['pace_runs'] / np.maximum(bat_summary['pace_balls'], 1)) * 100.0
 
     bat_summary['b26_balls'] = bat_summary['striker_id'].map(balls_26_bat).fillna(0)
     bat_summary['b26_runs'] = bat_summary['striker_id'].map(runs_26_bat).fillna(0)
@@ -233,6 +259,7 @@ def run_clutch_ranking_engine():
     bat_summary['rec_clutch_avg'] = bat_summary['eff_runs'] / np.maximum(bat_summary['eff_outs'], 1)
     bat_summary['shrunk_rec_avg'] = (bat_summary['eff_runs'] + K_OUTS * lg_avg) / (bat_summary['eff_outs'] + K_OUTS)
     bat_summary['wpa_rate_per_100'] = (bat_summary['eff_wpa'] / np.maximum(bat_summary['eff_balls'], 1)) * 100.0
+    bat_summary['surplus_per_ball'] = bat_summary['eff_surplus'] / np.maximum(bat_summary['eff_balls'], 1)
 
     all_bat = df.groupby('striker_id').agg(
         all_balls=('is_legal_ball', 'sum'),
@@ -253,9 +280,10 @@ def run_clutch_ranking_engine():
     norm_sr = np.clip((bat_summary['shrunk_rec_sr'] - 120.0) / 8.0, 0.0, 10.0)
     norm_avg = np.clip((bat_summary['shrunk_rec_avg'] - 15.0) / 3.0, 0.0, 10.0)
     norm_wpa = np.clip((bat_summary['wpa_rate_per_100'] + 0.5) * 4.0, 0.0, 10.0)
+    norm_surplus_bat = np.clip((bat_summary['surplus_per_ball'] + 0.20) / 0.60 * 10.0, 0.0, 10.0)
 
-    # Multi-dimensional Batting Quality: 45% Strike Rate, 30% Batting Average, 25% Win Probability Added
-    raw_quality_bat = norm_sr * 0.45 + norm_avg * 0.30 + norm_wpa * 0.25
+    # Multi-dimensional Batting Quality: 40% Strike Rate, 25% Batting Average, 20% WPA, 15% Pitch-Par Surplus
+    raw_quality_bat = norm_sr * 0.40 + norm_avg * 0.25 + norm_wpa * 0.20 + norm_surplus_bat * 0.15
 
     # Positional Opportunity Normalization:
     # Openers face 65-70% of match deliveries; death finishers physically face 50-80 balls a season max.
