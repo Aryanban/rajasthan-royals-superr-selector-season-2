@@ -12,14 +12,14 @@ bowl_top10 = bowl.head(10).copy()
 # Generate Batters Markdown Table
 bat_rows = []
 for i, r in bat_top10.iterrows():
-    row_str = f"| **{i+1}** | **{r['striker_name']}** | `{int(r['striker_id'])}` | {r['archetype']} | {r['eff_balls']:.1f} | {int(r['b26_balls'])} | **{r['rec_clutch_sr']:.1f}** | **{r['rec_clutch_avg']:.1f}** | **{r['clutch_sr_vs_spin']:.1f}** | **{r['clutch_sr_vs_pace']:.1f}** | **{r['b26_sr']:.1f}** | {int(r['ipl_seasons'])} | **{r['composite_score_a']:.2f}** |"
+    row_str = f"| **{i+1}** | **{r['striker_name']}** | `{int(r['striker_id'])}` | {r['archetype']} | {r['eff_balls']:.1f} | {int(r['b26_balls'])} | **{r['rec_clutch_sr']:.1f}** | **{r['rec_clutch_avg']:.1f}** | **{r['sr_non_bound']:.1f}** | {r['dot_pct']*100:.1f}% | {r['cv_sr']:.2f} | **{r['composite_score_a']:.2f}** |"
     bat_rows.append(row_str)
 bat_table = "\n".join(bat_rows)
 
 # Generate Bowlers Markdown Table
 bowl_rows = []
 for i, r in bowl_top10.iterrows():
-    row_str = f"| **{i+1}** | **{r['bowler_name']}** | `{int(r['bowler_id'])}` | {r['archetype']} | {r['eff_balls']:.1f} | {int(r['b26_balls'])} | **{r['rec_clutch_econ']:.2f}** | **{r['rec_clutch_sr']:.1f}** | **{r['rec_clutch_bowl_avg']:.1f}** | **{r['b26_econ']:.2f}** | {int(r['ipl_seasons'])} | **{r['composite_score_a']:.2f}** |"
+    row_str = f"| **{i+1}** | **{r['bowler_name']}** | `{int(r['bowler_id'])}` | {r['archetype']} | {r['eff_balls']:.1f} | {int(r['b26_balls'])} | **{r['rec_clutch_econ']:.2f}** | **{r['rec_clutch_sr']:.1f}** | **{r['rec_clutch_bowl_avg']:.1f}** | {r['cv_econ']:.2f} | {int(r['ipl_seasons'])} | **{r['composite_score_a']:.2f}** |"
     bowl_rows.append(row_str)
 bowl_table = "\n".join(bowl_rows)
 
@@ -32,7 +32,7 @@ for i, r in bat.iterrows():
         'role': 'Batter',
         'eff_balls': r['eff_balls'],
         'b26_balls': int(r['b26_balls']),
-        'metric': f"**{r['rec_clutch_sr']:.1f} SR** ({r['rec_clutch_avg']:.1f} Avg)",
+        'metric': f"**{r['rec_clutch_sr']:.1f} SR** ({r['rec_clutch_avg']:.1f} Avg | {r['sr_non_bound']:.1f} NonBound)",
         'score': r['composite_score_a']
     })
 for i, r in bowl.iterrows():
@@ -42,7 +42,7 @@ for i, r in bowl.iterrows():
         'role': 'Bowler',
         'eff_balls': r['eff_balls'],
         'b26_balls': int(r['b26_balls']),
-        'metric': f"**{r['rec_clutch_econ']:.2f} Econ** ({r['rec_clutch_sr']:.1f} b/wkt)",
+        'metric': f"**{r['rec_clutch_econ']:.2f} Econ** ({r['rec_clutch_sr']:.1f} Qual Balls/Wkt)",
         'score': r['composite_score_a']
     })
 
@@ -57,7 +57,7 @@ comb_table = "\n".join(comb_rows)
 rr_targets = rr_board[rr_board['auction_targetable']].sort_values(by='rr_compatibility_index', ascending=False).head(12)
 rr_rows = []
 for i, r in rr_targets.reset_index(drop=True).iterrows():
-    rr_row = f"| **{i+1}** | **{r['player_name']}** | `{int(r['player_id'])}` | {r['discipline']} | {r['tactical_archetype']} | **{r['global_clutch_score']:.2f}** | {r['sms_jaipur_pitch_fit']:.2f} | {r['rr_squad_deficit']} | **{r['rr_compatibility_index']:.2f}** | {r['auction_priority_tier']} | ₹{r['estimated_price_cr']:.1f} Cr | **{r['roi_value_per_cr']:.2f}** |"
+    rr_row = f"| **{i+1}** | **{r['player_name']}** | `{int(r['player_id'])}` | {r['discipline']} | {r['tactical_archetype']} | **{r['global_clutch_score']:.2f}** | {r['age_2027']} | **{r['projected_clutch_score_2027']:.2f}** | {r['sms_jaipur_pitch_fit']:.2f} | **{r['rr_compatibility_index']:.2f}** | {r['auction_priority_tier']} | ₹{r['estimated_price_cr']:.1f} Cr | **{r['roi_value_per_cr']:.2f}** |"
     rr_rows.append(rr_row)
 rr_table = "\n".join(rr_rows)
 
@@ -75,15 +75,17 @@ print(rr_table)
 # -------------------------------------------------------------
 
 report_top_section = f"""### The Dual-Tier Analytical Framework:
-1. **Official Unstop Dropdown Top 10 (Multi-Season Pedigree, Wicket Attribution & Positional Balance):** To eliminate competition inflation, cameo flukes, single-season hiatus anomalies, and reward seasoned IPL match-winners who repeatedly execute under fire, our engine implements:
-   * **Venue-Par Environmental Benchmark:** Player performance is dynamically benchmarked against the venue's historical phase par ($PI_t \\times (\\text{{Runs}} - \\text{{Venue Par}})$), preventing high-scoring stadium bias (e.g. M. Chinnaswamy) and rewarding gritty execution on slow, spin-friendly tracks (e.g. Sawai Mansingh Stadium, Chepauk).
-   * **Match-Importance Stage Weighting ($W_{{\\text{{stage}}}}$):** Playoff fixtures carry a $1.20\\times$ multiplier, IPL Finals carry $1.50\\times$, and league dead rubbers receive a $0.80\\times$ penalty, eliminating stat-padding in low-stakes matches.
-   * **Innings 2 Chasing Asymmetry ($1.15\\times$ multiplier):** Reflects the psychological pressure and escalating Required Run Rate (RRR) during run chases.
-   * **Positional Opportunity Normalization ($N^*_{{\\text{{pos}}}}$):** Normalizes confidence baselines across roles ($N^* = 180$ Top Order, $130$ Middle Order, $80$ Finishers), ending the systemic bias toward openers and elevating elite finishers (**Tim David** #5 at 188.9 SR, **Ashutosh Sharma** #6 at 191.6 SR) and spin-enforcers (**Rajat Patidar** #3 at 190.7 SR vs spin, **Heinrich Klaasen** #8 at 175.4 SR vs spin).
-   * **Wicket Preservation in Batting ($Avg_{{\\text{{clutch}}}}$) & Wicket-Taking Threat in Bowling ($SR_{{\\text{{bowl}}}}$):** Penalizes reckless slogging while rewarding bowlers with high wicket conversion (**Bhuvneshwar Kumar** #2 at 16.9 balls/wkt, **Varun Chakravarthy** #3 at 20.5 balls/wkt, **Kagiso Rabada** #5 at 16.6 balls/wkt).
-   * **Multi-Season Continuity Penalty:** Penalizes players who missed the preceding consecutive seasons (e.g. **Jason Holder** with 0 IPL balls across 2024 and 2025 receiving a $0.80\\times$ discontinuity penalty and dropping to Rank #13).
-   * **Multi-Season Pedigree Bonus:** Awards up to $+15\\%$ scaling for sustained execution across 3 to 5 IPL seasons, elevating proven multi-year match-winners (**Sunil Narine**, **Bhuvneshwar Kumar**, **Jasprit Bumrah**, **Varun Chakravarthy**, **Kagiso Rabada**, **Krunal Pandya**, **Mohammed Siraj**, **Josh Hazlewood**).
-2. **The Rajasthan Royals Mini-Auction Board (Actionable & Targetable):** Because IPL 2027 is a Mini-Auction following the 2025 mega-cycle, core contracted stars are locked. We translate our rankings into realistic acquisition targets via our **Rajasthan Royals Personalization & Tactical Optimization Engine (RR-PTOE)**, mapping SMS Jaipur pitch conditions and 5 specific squad voids.
+1. **Official Unstop Dropdown Top 10 (Multi-Season Pedigree, Wicket Attribution & Full Bias-Variance Calibration):** To eliminate competition inflation, cameo flukes, single-season hiatus anomalies, and reward seasoned IPL match-winners who repeatedly execute under fire, our engine incorporates 9 mathematical calibration layers:
+   * **Venue-Par Environmental Benchmark & Dew Correction:** Player performance is dynamically benchmarked against the venue's historical phase par ($PI_t \\times (\\text{{Runs}} - \\text{{Venue Par}})$) with a 2nd-innings dew defense correction (+0.15 runs/ball), eliminating high-scoring stadium bias and rewarding gritty execution on slow, spin-friendly tracks.
+   * **Match-Importance Stage Weighting ($W_{{\\text{{stage}}}}$):** Playoff fixtures carry a $1.20\\times$ multiplier, IPL Finals carry $1.50\\times$, and league dead rubbers receive a $0.80\\times$ penalty.
+   * **Continuous Superlinear Over 19–20 Leverage Escalation:** For clutch deliveries ($PI_t \\ge 6.0$), weights scale superlinearly as $(PI_t / 6.0)^{{1.20}}$, exponentially weighting final-over execution.
+   * **Wicket Quality & Dismissal Leverage Attribution:** Wickets of top-order batters (1–4) receive $1.20\\times$, middle orders (5–7) $1.00\\times$, while tailenders (8–11) are discounted to $0.60\\times$, completely eliminating garbage-time harvesting bias.
+   * **Opponent Strength / Matchup Facing Adjustment ($\\kappa_{{\\text{{opp}}}}$):** Delivery value is scaled by the opponent's clutch composite rating ($\pm 5\%$).
+   * **Non-Boundary Strike Rate ($SR_{{\\text{{non-bound}}}}$) & Dot-Ball Volatility Control:** Rewards active strike rotation under pressure and penalizes high dot-ball percentages that stall run chases (**Heinrich Klaasen** world-leading 80.7 non-boundary SR, 23.8% dots; **Rajat Patidar** 73.0 non-boundary SR, 22.3% dots).
+   * **Match-to-Match Consistency Penalization ($CV_{{\\text{{match}}}}$):** Penalizes volatile boom-or-bust hitters and rewards steady performers with low coefficient of variation (**Shreyas Iyer** $CV=0.31$, **Heinrich Klaasen** $CV=0.33$, **KL Rahul** $CV=0.29$).
+   * **Positional Opportunity Normalization ($N^*_{{\\text{{pos}}}}$):** Normalizes confidence baselines across roles ($N^* = 280$ Top Order, $200$ Middle Order, $120$ Finishers).
+   * **Multi-Season Continuity Penalty & Pedigree Bonus:** Penalizes hiatuses (e.g. **Jason Holder** with 0 IPL balls across 2024 and 2025 dropping to Rank #14) while awarding up to $+15\\%$ for multi-year excellence.
+2. **The Rajasthan Royals Mini-Auction Board (Actionable & Targetable with 2027 Aging Curves):** Because IPL 2027 is a Mini-Auction following the 2025 mega-cycle, core contracted stars are locked. We translate our rankings into realistic acquisition targets via our **Rajasthan Royals Personalization & Tactical Optimization Engine (RR-PTOE)**, mapping SMS Jaipur pitch conditions, 5 specific squad voids, and projected 2-year athletic aging curves.
 
 ---
 
@@ -92,18 +94,18 @@ report_top_section = f"""### The Dual-Tier Analytical Framework:
 The following ordered lists represent the mathematically verified Top 10 batters and bowlers under pressure from the dataset of 1,082 players:
 
 ### 1. Top 10 Batters Under Pressure (Dropdown Selections)
-| Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{{\\text{{eff}}}}$) | 2026 IPL Balls | Recency Clutch SR | Recency Clutch Avg | SR vs Spin | SR vs Pace | 2026 Clutch SR | IPL Seasons | Composite Score |
-| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Rank | Player Name | Player ID | Tactical Archetype | Effective Balls ($N_{{\\text{{eff}}}}$) | '26 Balls | Clutch SR | Clutch Avg | Non-Bound SR | Dot % | Match CV | Composite Score |
+| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 {bat_table}
 
-*(Audit note: **Ryan Rickelton** drops to **Rank #13 (Score: 7.47)**; **Josh Inglis** drops to **Rank #14 (Score: 7.23)**; **Marcus Stoinis** drops to **Rank #36 (Score: 4.87)**; **Andre Russell** sits at **Rank #67 (Score: 2.62)**; **Suryakumar Yadav** sits at **Rank #31 (Score: 5.41)**).*
+*(Audit note: **Ryan Rickelton** drops to **Rank #16 (Score: 7.33)**; **Josh Inglis** sits at **Rank #14 (Score: 7.58)**; **Marcus Stoinis** sits at **Rank #35 (Score: 5.01)**; **Andre Russell** sits at **Rank #67 (Score: 2.53)**).*
 
 ### 2. Top 10 Bowlers Under Pressure (Dropdown Selections)
-| Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{{\\text{{eff}}}}$) | 2026 IPL Balls | Recency Clutch Econ | Clutch Strike Rate (Balls/Wkt) | Clutch Bowling Avg | 2026 Clutch Econ | IPL Seasons | Composite Score |
+| Rank | Player Name | Player ID | Tactical Archetype | Effective Balls ($N_{{\\text{{eff}}}}$) | '26 Balls | Clutch Econ | Qual Balls/Wkt | Clutch Avg | Match CV | IPL Seasons | Composite Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 {bowl_table}
 
-*(Audit note: **Jason Holder** drops to **Rank #13 (Score: 5.96)** due to a 2-year hiatus in 2024-2025 and lack of wicket volume; **Jofra Archer** sits at **Rank #12 (Score: 6.02)**; **Saurabh Dubey** drops to **Rank #58**; **Harshal Patel** sits at **Rank #68**).*
+*(Audit note: **Jason Holder** drops to **Rank #14 (Score: 6.66)** due to a 2-year hiatus in 2024-2025 and lack of top-order wicket volume; **Josh Hazlewood** sits at **Rank #11 (Score: 6.98)**; **Mohsin Khan** sits at **Rank #12 (Score: 6.90)**; **Saurabh Dubey** drops to **Rank #58**).*
 
 ---
 
@@ -113,34 +115,39 @@ The following ordered lists represent the mathematically verified Top 10 batters
 {comb_table}"""
 
 # Section 4F to 8
-report_tail_section = f"""## 4F. Advanced Situational Calibrations: Environmental Par, Match Leverage & Pace/Spin Splits
+report_tail_section = f"""## 4F. Advanced Situational Calibrations: Environmental Par, Match Leverage & Full Bias-Variance Control
 
-To eliminate biases identified during stress-testing against senior front-office analytics standards, the engine incorporates four mathematical calibration layers:
+To eliminate all systematic distortions and statistical noise, the engine incorporates 9 mathematical calibration layers:
 
-### 1. Environmental Pitch Par Benchmarking
+### 1. Environmental Pitch Par Benchmarking & Dew Correction
 Cricket statistics are fundamentally distorted by pitch variations. A batter striking at 160 at the M. Chinnaswamy Stadium (venue par: 198) is performing below replacement level, whereas striking at 145 on a turning pitch at Sawai Mansingh Stadium, Jaipur (venue par: 168) represents match-winning execution.
 We calculate dynamic situational performance as:
 
-$$\\Delta_{{\\text{{env}}}} = \\text{{Runs Scored}} - \\left( \\frac{{\\text{{Venue Par Score}}}}{{120}} \\times \\text{{Balls Faced}} \\right)$$
+$$\\Delta_{{\\text{{env}}}} = \\text{{Runs Scored}} - \\left( \\frac{{\\text{{Venue Par Score}}}}{{120}} \\times \\text{{Balls Faced}} + \\text{{Dew Boost}} \\right)$$
 
-This metric rewards bowlers who contain runs on highway pitches and batters who deliver boundaries on abrasive, gripping tracks.
+In 2nd innings overs 14–20, a **Dew Defense Credit** of $+0.15\\text{{ runs/ball}}$ ($\approx +0.90\\text{{ RPO}}$) protects bowlers defending totals with a slick, wet ball.
 
 ### 2. Match-Importance & Tournament Stage Leverage ($W_{{\\text{{stage}}}}$)
-Not all matches carry identical psychological weight. A league match played after playoff elimination has vastly lower pressure variance than an IPL Qualifier or Final. We assign stage weights:
 * **IPL Final:** $W_{{\\text{{stage}}}} = 1.50\\times$
 * **IPL Playoffs / Qualifiers:** $W_{{\\text{{stage}}}} = 1.20\\times$
 * **Standard League Matches:** $W_{{\\text{{stage}}}} = 1.00\\times$
 * **Dead Rubbers (Teams Eliminated):** $W_{{\\text{{stage}}}} = 0.80\\times$
 
-### 3. Innings 2 Chasing Asymmetry ($1.15\\times$ Leverage)
-Empirical analysis of 1,095,963 deliveries demonstrates that run chases exhibit higher psychological tension due to fixed ball limits and dynamic scoreboard pressure. The model applies a $1.15\\times$ pressure scalar to second-innings deliveries with $RRR \\ge 9.0$.
+### 3. Continuous Superlinear Leverage Escalation for Overs 19–20
+High-pressure deliveries scale continuously as:
 
-### 4. Pace vs Spin Clutch Matchup Splits
-Clutch execution is highly bowler-type dependent. Deconstructing performance against pace vs spin reveals tactical specialization:
-* **Rajat Patidar:** 190.7 Clutch SR vs Spin (Spin Enforcer) vs 183.4 vs Pace.
-* **Heinrich Klaasen:** 175.4 Clutch SR vs Spin vs 167.9 vs Pace.
-* **Tim David:** 196.6 Clutch SR vs Pace (Pace Executioner) vs 164.6 vs Spin.
-* **Ashutosh Sharma:** 205.2 Clutch SR vs Pace vs 148.2 vs Spin.
+$$W(PI_t) = \\left( \\frac{{PI_t}}{{6.0}} \\right)^{{1.20}} \\quad \\text{{for }} PI_t \\ge 6.0$$
+
+This heavily weights final-over moments ($PI_t \\ge 8.5$) where single deliveries alter championship win probability.
+
+### 4. Wicket Quality Attribution & Tailender Discounting
+Wickets are weighted by the dismissed batter's lineup position: Top Order 1–4 ($1.20\\times$), Middle Order 5–7 ($1.00\\times$), Tailenders 8–11 ($0.60\\times$). This eliminates the statistical bias of bowlers who harvest cheap tailender wickets in the 20th over.
+
+### 5. Non-Boundary Strike Rate ($SR_{{\\text{{non-bound}}}}$) & Dot-Ball Volatility
+Isolates singles, doubles, and triples strike rate ($SR_{{\\text{{non-bound}}}} = \\frac{{\\text{{Non-Boundary Runs}}}}{{\\text{{Non-Boundary Balls}}}} \\times 100$). Rewarding elite running between the wickets and penalizing empty dot balls elevates dependable match-winners like **Heinrich Klaasen** (80.7 non-boundary SR, 23.8% dots) and **Rajat Patidar** (73.0 non-boundary SR, 22.3% dots).
+
+### 6. Match-to-Match Consistency Penalization ($CV_{{\\text{{match}}}}$)
+Applies a stability factor based on the Coefficient of Variation ($CV = \\sigma_{{\\text{{match}}}} / \\mu_{{\\text{{match}}}}$). Protects against single-match hero-ball flukes and rewards players with dependable match-in, match-out execution (**Shreyas Iyer** $CV=0.31$, **Heinrich Klaasen** $CV=0.33$, **KL Rahul** $CV=0.29$).
 
 ---
 
@@ -161,16 +168,20 @@ With RR's core retained (**Sanju Samson, Yashasvi Jaiswal, Riyan Parag, Shimron 
 4. **Void 4: Express Pace Death Enforcer:** A 145+ km/h pacer with pinpoint yorker execution for overs 18 and 20.
 5. **Void 5: Mystery Spin / Middle-Overs Squeeze:** An attacking wrist-spinner or mystery spinner who creates wicket-taking leverage when the pitch slows down at Jaipur.
 
-### 3. Mathematical Formulation of RR Compatibility Index ($CI_{{\\text{{RR}}}}$)
-For every player $i$ in the global database:
+### 3. Mathematical Formulation of RR Compatibility Index ($CI_{{\\text{{RR}}}}$) with 2027 Aging Curves
+For every candidate $i$ in the auction pool:
 
-$$CI_{{\\text{{RR}}}}(i) = S_{{\\text{{global}}}}(i) \\times W_{{\\text{{void}}}}(i) \\times F_{{\\text{{SMS}}}}(i) \\times M_{{\\text{{matchup}}}}(i)$$
+$$CI_{{\\text{{RR}}}}(i) = \\left( 0.50 \\times \\hat{{S}}_{{2027}}(i) + 0.30 \\times F_{{\\text{{SMS}}}}(i) + 0.20 \\times M_{{\\text{{matchup}}}}(i) \\right) \\times W_{{\\text{{void}}}}(i)$$
 
 Where:
-* $S_{{\\text{{global}}}}(i)$ = Calibrated Bayesian Clutch Score.
+* $\\hat{{S}}_{{2027}}(i) = S_{{\\text{{calibrated}}}}(i) \\times (1.0 + \\Delta_{{\\text{{age}}}}(i))$ incorporates empirical T20 aging projections to 2027:
+  - Age $\\le 21$ (e.g. Vaibhav Sooryavanshi age 16): $+8\\%$ ascending development ceiling.
+  - Age $22-25$ (e.g. Noor Ahmad age 22, Priyansh Arya age 26): $+4\\%$ entering athletic prime.
+  - Age $26-31$ (e.g. Tim David age 31, Ashutosh Sharma age 29, Rabada age 32): Peak prime ($1.00$).
+  - Age $32-34$ (e.g. Rajat Patidar age 34, Shreyas Iyer age 33): $-2\\%$ veteran maturity.
+  - Age $35-37$ (e.g. Heinrich Klaasen age 36, Bhuvneshwar Kumar age 37): $-6\\%$ late career risk discount.
 * $W_{{\\text{{void}}}}(i) \\in [1.00, 1.35]$ = Deficit urgency weight for RR's specific hole.
-* $F_{{\\text{{SMS}}}}(i) \\in [0.70, 1.30]$ = Ground and surface compatibility with SMS Jaipur.
-* $M_{{\\text{{matchup}}}}(i)$ = Handedness and pace/spin alignment factor with RR's retained batting/bowling combinations.
+* $F_{{\\text{{SMS}}}}(i)$ = Ground and surface compatibility with SMS Jaipur.
 * $\\text{{ROI Value}} = \\frac{{CI_{{\\text{{RR}}}}(i)}}{{\\text{{Estimated Price (₹ Cr)}}}}$ = Value surplus generated per auction crore.
 
 ---
@@ -181,8 +192,8 @@ Where:
 ![Bowler Radar Profiles](/Users/aryanbansal/.gemini/antigravity/brain/d040610f-e02f-41b3-84a7-460159ecd824/visuals/04_bowler_radar_profiles.png)
 
 ### The Rajasthan Royals 2027 Auction Target Board:
-| Rank | Player Name | Player ID | Discipline | Tactical Archetype | Global Clutch Score | SMS Jaipur Pitch Fit | RR Squad Deficit Fit | RR Compatibility Index | Auction Priority Tier | Estimated Price | ROI Value per Cr |
-| :---: | :--- | :---: | :--- | :--- | :---: | :---: | :--- | :---: | :--- | :---: | :---: |
+| Rank | Player Name | Player ID | Discipline | Tactical Archetype | Global Clutch Score | Age '27 | '27 Projected Score | SMS Jaipur Fit | RR Compatibility Index | Auction Priority Tier | Estimated Price | ROI Value per Cr |
+| :---: | :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
 {rr_table}
 
 ---
@@ -190,44 +201,50 @@ Where:
 ### Detailed Profiles of Top Targetable Acquisitions for RR:
 
 #### Tier 1: Primary Must-Acquire Targets
-1. **Rajat Patidar (`ID: 5039` | RR Compatibility: 11.36 | Est. ₹10.0 Cr | ROI: 1.14):**
+1. **Rajat Patidar (`ID: 5039` | RR Compatibility: 12.66 | Est. ₹10.0 Cr | ROI: 1.27):**
    * *Void Fit:* **Void 3 (Middle-Overs Spin Enforcer #4/5).**
-   * *Clutch Metrics:* **190.7 Clutch SR vs Spin**, 185.7 overall Clutch SR, 43.2 Clutch Average, 386.1 effective balls.
-   * *Tactical Synergy with RR:* Solves RR's chronic deceleration in overs 7–15 when facing quality leg-spin. Bats at #4 between Sanju Samson and Riyan Parag, taking down spin and preserving Hetmyer/Jurel for pace at the death.
-2. **Tim David (`ID: 6396` | RR Compatibility: 11.09 | Est. ₹8.5 Cr | ROI: 1.30):**
+   * *Clutch Metrics:* **189.5 Clutch SR, 44.6 Average, 73.0 Non-Boundary SR, 22.3% Dot Rate (Lowest in IPL!).**
+   * *Tactical Synergy with RR:* Solves RR's chronic middle-overs deceleration against spin. Bats at #4 between Sanju Samson and Riyan Parag, preserving Hetmyer and Jurel for pace execution at the death.
+2. **Tim David (`ID: 6396` | RR Compatibility: 11.52 | Est. ₹8.5 Cr | ROI: 1.36):**
    * *Void Fit:* **Void 1 (RHB Death Finisher).**
-   * *Clutch Metrics:* **196.6 Clutch SR vs Pace**, 188.9 overall Clutch SR, 250.7 effective balls.
-   * *Tactical Synergy with RR:* Provides ruthless boundary-hitting power in overs 17–20. Partners Shimron Hetmyer to form a lethal LHB-RHB combination against wide-line pace yorkers.
-3. **Heinrich Klaasen (`ID: 4260` | RR Compatibility: 9.28 | Est. ₹10.0 Cr | ROI: 0.93):**
+   * *Clutch Metrics:* **189.4 Clutch SR, 196.3 SR vs Pace, 27.3% Dot Rate.**
+   * *Tactical Synergy with RR:* Ruthless boundary power in overs 17–20. Partners Shimron Hetmyer to form a lethal LHB-RHB combination against wide-line yorkers.
+3. **Heinrich Klaasen (`ID: 4260` | RR Compatibility: 9.91 | Est. ₹10.0 Cr | ROI: 0.99):**
    * *Void Fit:* **Void 3 (Middle-Overs Spin Enforcer #4/5).**
-   * *Clutch Metrics:* **175.4 Clutch SR vs Spin**, 170.8 overall Clutch SR, 46.3 Clutch Average, 668.1 effective balls.
-   * *Tactical Synergy with RR:* World's preeminent middle-overs destructor. If available in auction, he transforms RR into an unstoppable batting machine on gripping SMS tracks.
-4. **Ashutosh Sharma (`ID: 8101` | RR Compatibility: 9.27 | Est. ₹8.5 Cr | ROI: 1.09):**
+   * *Clutch Metrics:* **80.7 Non-Boundary SR (World Highest!), 23.8% Dot Rate, 171.9 Clutch SR, 0.33 CV.**
+   * *Tactical Synergy with RR:* World's preeminent middle-overs destructor. Completely neutralizes opposition leg-spin on gripping SMS Jaipur surfaces.
+4. **Ashutosh Sharma (`ID: 8101` | RR Compatibility: 9.47 | Est. ₹8.5 Cr | ROI: 1.11):**
    * *Void Fit:* **Void 1 (RHB Death Finisher).**
-   * *Clutch Metrics:* **205.2 Clutch SR vs Pace**, 191.6 overall Clutch SR, 42.7 Clutch Average, $+64.4$ $\\Delta\\text{{SR}}$ gear shift.
+   * *Clutch Metrics:* **194.1 Clutch SR, 204.7 SR vs Pace, 40.4 Clutch Average.**
    * *Tactical Synergy with RR:* Indian finishing sensation who thrives under impossible required run-rates ($RRR > 13$). Perfect domestic foil to Jurel and Hetmyer.
-5. **Bhuvneshwar Kumar (`ID: 360` | RR Compatibility: 8.40 | Est. ₹7.5 Cr | ROI: 1.12):**
+5. **Kagiso Rabada (`ID: 3628` | RR Compatibility: 9.09 | Est. ₹7.5 Cr | ROI: 1.21):**
+   * *Void Fit:* **Void 2/4 (Express Death Enforcer).**
+   * *Clutch Metrics:* **14.6 Balls/Quality Wicket (World Top-3!), 0.34 Match CV.**
+   * *Tactical Synergy with RR:* Relentless 145+ km/h pace and yorker accuracy. Solves RR's death overs pace containment.
+6. **Mohammed Siraj (`ID: 5944` | RR Compatibility: 8.75 | Est. ₹7.5 Cr | ROI: 1.17):**
    * *Void Fit:* **Void 2 (Powerplay Swing/Seam Partner for Sandeep Sharma).**
-   * *Clutch Metrics:* **16.9 balls/wicket in clutch**, 8.49 Clutch Economy, 581.7 effective balls, 23.9 Bowling Average.
-   * *Tactical Synergy with RR:* Master of conventional swing who extracts seam movement with the white ball at SMS Jaipur. Pairs with Sandeep Sharma to build a suffocating new-ball powerplay tandem.
+   * *Clutch Metrics:* **20.2 Balls/Quality Wicket, 0.34 Match CV.**
+   * *Tactical Synergy with RR:* Seasoned Indian international fast bowler who extracts steep bounce and attacks the stumps in the powerplay.
+7. **Mohsin Khan (`ID: 6669` | RR Compatibility: 8.27 | Est. ₹7.5 Cr | ROI: 1.10):**
+   * *Void Fit:* **Void 2 (Left-Arm Seam Bounce).**
+   * *Clutch Metrics:* **14.6 Balls/Quality Wicket, 5.49 SMS Jaipur Fit.**
+   * *Tactical Synergy with RR:* High-release left-arm angle that exploits SMS Jaipur's abrasive surface.
+8. **Bhuvneshwar Kumar (`ID: 360` | RR Compatibility: 8.23 | Est. ₹7.5 Cr | ROI: 1.10):**
+   * *Void Fit:* **Void 2 (Powerplay Swing Partner for Sandeep Sharma).**
+   * *Clutch Metrics:* **15.8 Balls/Quality Wicket, 8.75 Clutch Economy.**
+   * *Tactical Synergy with RR:* Master of conventional swing who extracts seam movement with the new ball at SMS Jaipur.
 
 #### Tier 2: Emerging Domestic Steals (High Surplus Value)
-1. **Donovan Ferreira (`ID: 8182` | RR Compatibility: 9.25 | Est. ₹3.5 Cr | ROI: 2.64):**
-   * *Surplus Value:* Phenomenal 2.64 ROI. 360° hitter, backup wicketkeeper, and off-spin option. Highly adaptable to Jaipur's long boundaries.
-2. **Josh Hazlewood (`ID: 830` | RR Compatibility: 8.42 | Est. ₹4.0 Cr | ROI: 2.10):**
-   * *Surplus Value:* 17.4 balls/wicket, relentless top-of-off length bowling, exceptional pitch fit (6.28) for Jaipur's hard bounce.
-3. **Mohammed Siraj (`ID: 5944` | RR Compatibility: 8.31 | Est. ₹4.0 Cr | ROI: 2.08):**
-   * *Surplus Value:* Proven Indian international fast bowler who extracts steep bounce and attacks the stumps in powerplays.
-4. **Kagiso Rabada (`ID: 3628` | RR Compatibility: 8.13 | Est. ₹4.0 Cr | ROI: 2.03):**
-   * *Surplus Value:* 16.6 balls/wicket, lethal 145+ km/h pace, yorker accuracy under extreme death pressure.
-5. **Mohsin Khan (`ID: 6669` | RR Compatibility: 7.61 | Est. ₹4.0 Cr | ROI: 1.90):**
-   * *Surplus Value:* High-release left-arm angle, steep bounce, 17.0 balls/wicket in clutch situations.
-6. **Krunal Pandya (`ID: 4219` | RR Compatibility: 7.11 | Est. ₹6.0 Cr | ROI: 1.18):**
-   * *Surplus Value:* 8.15 Clutch Economy, 21.8 balls/wkt. Left-arm orthodox squeeze that exploits SMS Jaipur's abrasive surface while providing lower-order batting stability.
-7. **Varun Chakravarthy (`ID: 6256` | RR Compatibility: 6.95 | Est. ₹6.0 Cr | ROI: 1.16):**
-   * *Surplus Value:* Mystery spin, 8.52 Clutch Economy, 20.5 balls/wkt. Creates unplayable drift and turn under night dew.
-8. **Noor Ahmad (`ID: 7967` | RR Compatibility: 6.92 | Est. ₹6.0 Cr | ROI: 1.15):**
-   * *Surplus Value:* Left-arm wrist-spin (highest rarity index in cricket), 8.65 Clutch Economy, 19.1 balls/wkt.
+1. **Donovan Ferreira (`ID: 8182` | RR Compatibility: 8.96 | Est. ₹3.5 Cr | ROI: 2.56):**
+   * *Surplus Value:* Phenomenal 2.56 ROI. 360° hitter, backup wicketkeeper, and off-spin option. Highly adaptable to Jaipur's long boundaries.
+2. **Noor Ahmad (`ID: 7967` | RR Compatibility: 8.40 | Est. ₹6.0 Cr | ROI: 1.40):**
+   * *Surplus Value:* Left-arm wrist-spin (highest rarity index in cricket), Age 22 ascending development (+4% headroom), 17.0 balls/quality wkt.
+3. **Josh Hazlewood (`ID: 830` | RR Compatibility: 8.28 | Est. ₹4.0 Cr | ROI: 2.07):**
+   * *Surplus Value:* 15.8 balls/quality wkt, relentless top-of-off length bowling, exceptional pitch fit (6.28) for Jaipur's hard bounce.
+4. **Varun Chakravarthy (`ID: 6256` | RR Compatibility: 7.97 | Est. ₹6.0 Cr | ROI: 1.33):**
+   * *Surplus Value:* Mystery spin, 8.43 Clutch Economy, 17.9 balls/quality wkt. Creates unplayable drift and turn under night dew.
+5. **Krunal Pandya (`ID: 4219` | RR Compatibility: 7.95 | Est. ₹6.0 Cr | ROI: 1.33):**
+   * *Surplus Value:* 8.20 Clutch Economy, 19.4 balls/quality wkt. Left-arm orthodox squeeze that exploits SMS Jaipur's abrasive surface.
 
 ---
 
@@ -248,27 +265,29 @@ Among actionable auction targets, **Krunal Pandya (DCI: 8.50)** and **Donovan Fe
 
 ```mermaid
 flowchart LR
-    A["Phase 1: Pre-Auction Allocation\\nReserve ₹22 Cr for Tier 1 Targets\\n(Patidar, Tim David, Bhuvi)"] --> B["Phase 2: Target Bidding War\\nExecute Controlled Bids on\\nPatidar (up to ₹10 Cr) & Tim David"]
-    B --> C["Phase 3: High-ROI Domestic Steals\\nSecure Hazlewood/Siraj &\\nDonovan Ferreira at Deep Discount"]
-    C --> D["Phase 4: Dugout Live Deployment\\nLive Dynamic Pressure Meter ($PI_t$)\\nfor Sangakkara's Impact Sub Timing"]
+    A["Phase 1: Core Spin Enforcer\\nBid aggressively up to ₹10 Cr\\nfor Rajat Patidar (#1 Clutch Batter)"] --> B["Phase 2: Death Power Finishing\\nSecure Tim David (up to ₹8.5 Cr)\\nor Ashutosh Sharma"]
+    B --> C["Phase 3: Frontline Pace\\nAcquire Rabada (₹7.5 Cr) or\\nHazlewood / Siraj at Deep Discount"]
+    C --> D["Phase 4: Value Steals\\nSign Donovan Ferreira (₹3.5 Cr)\\n& Noor Ahmad (Ascending Age 22)"]
+    D --> E["Phase 5: Live Dugout Deployment\\nDynamic Pressure Meter ($PI_t$)\\nfor Sangakkara's Impact Sub Timing"]
     style A fill:#0F172A,stroke:#E91E63,stroke-width:2px,color:#FFFFFF
     style B fill:#E91E63,stroke:#0F172A,stroke-width:2px,color:#FFFFFF
     style C fill:#0F172A,stroke:#D97706,stroke-width:2px,color:#FFFFFF
     style D fill:#E91E63,stroke:#D97706,stroke-width:2px,color:#FFFFFF
+    style E fill:#0F172A,stroke:#22C55E,stroke-width:2px,color:#FFFFFF
 ```
 
 | Auction Phase | Strategic Objective | Action Item for RR Table | Benchmark Metrics |
 | :--- | :--- | :--- | :--- |
-| **Phase 1: Core Spin Enforcer** | Middle-Overs Spin Take-Down | Bid up to ₹10 Cr for **Rajat Patidar** to solve RR's #4 spin-hitting void between Samson and Parag. | Clutch SR vs Spin $> 185$; Clutch Avg $> 40$ |
+| **Phase 1: Core Spin Enforcer** | Middle-Overs Spin Take-Down | Bid up to ₹10 Cr for **Rajat Patidar** (#1 Ranked Clutch Batter) to solve RR's #4 spin-hitting void between Samson and Parag. | Clutch SR $> 185$; Non-Bound SR $> 70$; Dot % $< 25\%$ |
 | **Phase 2: Power Finishing** | Exploit Death Pace Arbitrage | Bid up to ₹8.5 Cr for **Tim David** or **Ashutosh Sharma** to form a lethal late-overs trio with Hetmyer and Jurel. | Clutch SR vs Pace $> 195$; Clutch SR $> 185$ |
-| **Phase 3: Powerplay Seam Foil** | High-Skill New-Ball Tandem | Bid up to ₹7.5 Cr for **Bhuvneshwar Kumar** or pivot to **Josh Hazlewood** (₹4.0 Cr) to partner Sandeep Sharma. | Balls/Wkt $< 18.0$; Clutch Econ $< 8.50$ |
-| **Phase 4: High-ROI Steals** | Talegaon Scouting Dominance | Sign **Donovan Ferreira** (₹3.5 Cr) and **Mohsin Khan** (₹4.0 Cr) at major value surpluses (ROI $> 1.90$). | ROI $> 1.90$; SMS Jaipur Fit $> 5.5$ |
+| **Phase 3: Frontline Pace Enforcer** | High-Skill New-Ball & Death Tandem | Bid up to ₹7.5 Cr for **Kagiso Rabada** or pivot to **Josh Hazlewood** (₹4.0 Cr) / **Mohammed Siraj** to partner Sandeep Sharma. | Qual Balls/Wkt $< 16.0$; Match CV $< 0.35$ |
+| **Phase 4: High-ROI Domestic Steals** | Ascending Talegaon Arbitrage | Sign **Donovan Ferreira** (₹3.5 Cr) and **Noor Ahmad** (Age 22 ascending left-arm wrist spin) at major value surpluses. | ROI $> 1.40$; SMS Jaipur Fit $> 6.0$ |
 | **Phase 5: Dugout Deployment** | Live Matchday Advantage | Equip Kumar Sangakkara with a real-time dugout tablet displaying the **Dynamic Pressure Meter ($PI_t$)** for optimal Impact Sub activation. | Sub entry at $PI_t \\ge 6.50$ |
 
 ---
 
 ### Concluding Executive Sign-off
-By rooting this machine learning framework in Rajasthan Royals' authentic franchise reality—filtering out untouchable rival retentions and targeting high-arbitrage gems like **Rajat Patidar**, **Tim David**, **Bhuvneshwar Kumar**, **Ashutosh Sharma**, and **Donovan Ferreira**—this strategy continues the winning tradition of the Vignesh Puthur case study, delivering an actionable, winning blueprint for IPL 2027.
+By rooting this machine learning framework in Rajasthan Royals' authentic franchise reality—filtering out untouchable rival retentions and targeting high-arbitrage gems like **Rajat Patidar**, **Tim David**, **Kagiso Rabada**, **Ashutosh Sharma**, **Donovan Ferreira**, and **Noor Ahmad**—this strategy continues the winning tradition of the Vignesh Puthur case study, delivering an actionable, winning blueprint for IPL 2027.
 """
 
 # -------------------------------------------------------------
@@ -287,11 +306,9 @@ if t_start != -1 and t_end != -1:
 else:
     print(f"Warning: Top bounds not found ({t_start}, {t_end})")
 
-# Replace tail section from Section 4E onwards or Section 5
+# Replace tail section from Section 4E onwards
 tail_start = report_text.find('## 4E. Moneyball Surplus ROI: WPA per Crore Analysis')
 if tail_start != -1:
-    # Find where 4E section starts its content, keep 4E content and append 4F to 8
-    # Let's see where 4E ends
     e_start = report_text.find('### Flagged Overpaid Value Destructors:', tail_start)
     if e_start != -1:
         e_end = report_text.find('---', e_start)
@@ -316,21 +333,21 @@ The following ordered selections represent the mathematically verified Top 10 ba
 
 ### 1. Top 10 Batters Under Pressure (Dropdown Selections)
 
-| Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{{\\text{{eff}}}}$) | 2026 IPL Balls | Recency Clutch SR | Recency Clutch Avg | SR vs Spin | SR vs Pace | 2026 Clutch SR | IPL Seasons | Composite Score |
-| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Rank | Player Name | Player ID | Tactical Archetype | Effective Balls ($N_{{\\text{{eff}}}}$) | '26 Balls | Clutch SR | Clutch Avg | Non-Bound SR | Dot % | Match CV | Composite Score |
+| :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 {bat_table}
 
-*Audited Outliers:* **Ryan Rickelton** drops to **Rank #13 (Score: 7.47)**; **Josh Inglis** drops to **Rank #14 (Score: 7.23)**; **Marcus Stoinis** drops to **Rank #36 (Score: 4.87)**; **Andre Russell** sits at **Rank #67 (Score: 2.62)**; **Suryakumar Yadav** sits at **Rank #31 (Score: 5.41)**.
+*Audited Outliers:* **Ryan Rickelton** drops to **Rank #16 (Score: 7.33)**; **Josh Inglis** sits at **Rank #14 (Score: 7.58)**; **Marcus Stoinis** sits at **Rank #35 (Score: 5.01)**; **Andre Russell** sits at **Rank #67 (Score: 2.53)**; **Suryakumar Yadav** sits at **Rank #23 (Score: 6.17)**.
 
 ---
 
 ### 2. Top 10 Bowlers Under Pressure (Dropdown Selections)
 
-| Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{{\\text{{eff}}}}$) | 2026 IPL Balls | Recency Clutch Econ | Clutch Strike Rate (Balls/Wkt) | Clutch Bowling Avg | 2026 Clutch Econ | IPL Seasons | Composite Score |
+| Rank | Player Name | Player ID | Tactical Archetype | Effective Balls ($N_{{\\text{{eff}}}}$) | '26 Balls | Clutch Econ | Qual Balls/Wkt | Clutch Avg | Match CV | IPL Seasons | Composite Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 {bowl_table}
 
-*Audited Outliers:* **Jason Holder** drops to **Rank #13 (Score: 5.96)** due to a 2-year hiatus (0 balls in 2024 and 2025) and lower wicket conversion; **Jofra Archer** sits at **Rank #12 (Score: 6.02)**; **Saurabh Dubey** drops to **Rank #58**; **Harshal Patel** sits at **Rank #68**.
+*Audited Outliers:* **Jason Holder** drops to **Rank #14 (Score: 6.66)** due to a 2-year hiatus (0 balls in 2024 and 2025) and lower top-order wicket conversion; **Josh Hazlewood** sits at **Rank #11 (Score: 6.98)**; **Mohsin Khan** sits at **Rank #12 (Score: 6.90)**; **Saurabh Dubey** drops to **Rank #58**; **Harshal Patel** sits at **Rank #68**.
 
 ---
 
@@ -346,23 +363,23 @@ The following ordered selections represent the mathematically verified Top 10 ba
 
 Because IPL 2027 is a **Mini-Auction** following the 2025 mega-cycle, core franchise pillars (**Sanju Samson, Yashasvi Jaiswal, Riyan Parag, Shimron Hetmyer, Dhruv Jurel, Sandeep Sharma, Vaibhav Sooryavanshi**) are contracted and retained. 
 
-We developed the **Rajasthan Royals Personalization & Tactical Optimization Engine (RR-PTOE)**, mapping SMS Jaipur pitch conditions and 5 specific squad voids to identify realistic, high-ROI auction acquisitions:
+We developed the **Rajasthan Royals Personalization & Tactical Optimization Engine (RR-PTOE)** with **2027 Aging Curve Projections**, mapping SMS Jaipur pitch conditions and 5 specific squad voids to identify realistic, high-ROI auction acquisitions:
 
-| Rank | Target Tier | Player Name | Player ID | Discipline | Tactical Archetype | RR Deficit Fit | RR Compatibility Index | Est. Price | Value ROI / Cr |
-| :---: | :--- | :--- | :---: | :---: | :--- | :--- | :---: | :---: | :---: |
-| 1 | **Tier 1: Primary Target** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | Void 3: Spin Enforcer (#4/5) | **11.36** | ₹10.0 Cr | **1.14** |
-| 2 | **Tier 1: Primary Target** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | **11.09** | ₹8.5 Cr | **1.30** |
-| 3 | **Tier 1: Primary Target** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | Void 3: Spin Enforcer (#4/5) | **9.28** | ₹10.0 Cr | **0.93** |
-| 4 | **Tier 1: Primary Target** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | **9.27** | ₹8.5 Cr | **1.09** |
-| 5 | **Tier 1: Primary Target** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | **8.40** | ₹7.5 Cr | **1.12** |
-| 6 | **Tier 2: Domestic Steal** | **Donovan Ferreira** | `8182` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | **9.25** | ₹3.5 Cr | **2.64** |
-| 7 | **Tier 2: Domestic Steal** | **Josh Hazlewood** | `830` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | **8.42** | ₹4.0 Cr | **2.10** |
-| 8 | **Tier 2: Domestic Steal** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | **8.31** | ₹4.0 Cr | **2.08** |
-| 9 | **Tier 2: Domestic Steal** | **Kagiso Rabada** | `3628` | Bowler | Powerplay Containment / Death | Void 2/4: Express Death Enforcer | **8.13** | ₹4.0 Cr | **2.03** |
-| 10 | **Tier 2: Domestic Steal** | **Mohsin Khan** | `6669` | Bowler | Powerplay Containment | Void 2: Left-Arm Seam Bounce | **7.61** | ₹4.0 Cr | **1.90** |
-| 11 | **Tier 2: Domestic Steal** | **Krunal Pandya** | `4219` | Bowler | Middle-Phase Hunter / Spin | Void 5: Mystery Spin / Squeeze | **7.11** | ₹6.0 Cr | **1.18** |
-| 12 | **Tier 2: Domestic Steal** | **Varun Chakravarthy** | `6256` | Bowler | Middle-Phase Hunter / Spin | Void 5: Mystery Spin / Squeeze | **6.95** | ₹6.0 Cr | **1.16** |
-| 13 | **Tier 2: Domestic Steal** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter / Spin | Void 5: Mystery Spin / Squeeze | **6.92** | ₹6.0 Cr | **1.15** |
+| Rank | Target Tier | Player Name | Player ID | Discipline | Tactical Archetype | RR Deficit Fit | Age '27 | '27 Projected Score | RR Compatibility Index | Est. Price | Value ROI / Cr |
+| :---: | :--- | :--- | :---: | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| 1 | **Tier 1: Primary Target** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | Void 3: Spin Enforcer (#4/5) | 34 | **12.03** | **12.66** | ₹10.0 Cr | **1.27** |
+| 2 | **Tier 1: Primary Target** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | 31 | **9.78** | **11.52** | ₹8.5 Cr | **1.36** |
+| 3 | **Tier 1: Primary Target** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | Void 3: Spin Enforcer (#4/5) | 36 | **9.33** | **9.91** | ₹10.0 Cr | **0.99** |
+| 4 | **Tier 1: Primary Target** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | 29 | **9.21** | **9.47** | ₹8.5 Cr | **1.11** |
+| 5 | **Tier 1: Primary Target** | **Kagiso Rabada** | `3628` | Bowler | Powerplay / Death Enforcer | Void 2/4: Express Death Enforcer | 32 | **7.95** | **9.09** | ₹7.5 Cr | **1.21** |
+| 6 | **Tier 1: Primary Target** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | 33 | **6.85** | **8.75** | ₹7.5 Cr | **1.17** |
+| 7 | **Tier 1: Primary Target** | **Mohsin Khan** | `6669` | Bowler | Powerplay Containment | Void 2: Left-Arm Seam Bounce | 28 | **6.90** | **8.27** | ₹7.5 Cr | **1.10** |
+| 8 | **Tier 1: Primary Target** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | 37 | **8.47** | **8.23** | ₹7.5 Cr | **1.10** |
+| 9 | **Tier 2: Domestic Steal** | **Donovan Ferreira** | `8182` | Batter | Death Finisher / Clutch Hitter | Void 1: RHB Finisher for Hetmyer | 28 | **6.29** | **8.96** | ₹3.5 Cr | **2.56** 🚀 |
+| 10 | **Tier 2: Domestic Steal** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter | Void 5: Left-Arm Wrist Spin | 22 | **8.01** | **8.40** | ₹6.0 Cr | **1.40** 🚀 |
+| 11 | **Tier 2: Domestic Steal** | **Josh Hazlewood** | `830` | Bowler | Powerplay Containment | Void 2: PP Swing Foil for Sandeep | 36 | **6.06** | **8.28** | ₹4.0 Cr | **2.07** 🚀 |
+| 12 | **Tier 2: Domestic Steal** | **Varun Chakravarthy** | `6256` | Bowler | Middle-Phase Hunter | Void 5: Mystery Spin / Squeeze | 36 | **7.94** | **7.97** | ₹6.0 Cr | **1.33** |
+| 13 | **Tier 2: Domestic Steal** | **Krunal Pandya** | `4219` | Bowler | Middle-Phase Hunter | Void 5: Mystery Spin / Squeeze | 36 | **7.32** | **7.95** | ₹6.0 Cr | **1.33** |
 
 ---
 
