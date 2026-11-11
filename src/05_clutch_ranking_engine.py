@@ -358,7 +358,7 @@ def run_clutch_ranking_engine():
     bat_summary['b26_outs'] = bat_summary['striker_id'].map(outs_26_bat).fillna(0)
     bat_summary['b26_sr'] = (bat_summary['b26_runs'] / np.maximum(bat_summary['b26_balls'], 1)) * 100.0
 
-    K_SHRINKAGE_BAT = 50.0
+    K_SHRINKAGE_BAT = 35.0
     lg_sr = (bat_summary['eff_runs'].sum() / np.maximum(bat_summary['eff_balls'].sum(), 1)) * 100.0
     bat_summary['rec_clutch_sr'] = (bat_summary['eff_runs'] / np.maximum(bat_summary['eff_balls'], 1)) * 100.0
     bat_summary['shrunk_rec_sr'] = (bat_summary['eff_runs'] * 100.0 + K_SHRINKAGE_BAT * lg_sr) / (bat_summary['eff_balls'] + K_SHRINKAGE_BAT)

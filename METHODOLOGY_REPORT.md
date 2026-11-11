@@ -422,18 +422,18 @@ Where:
 ### The Rajasthan Royals 2027 Auction Target Board:
 | Rank | Player Name | Player ID | Discipline | Tactical Archetype | Global Clutch Score | Age '27 | IPL Avail % | ADF Factor | '27 Projected Score | SMS Jaipur Fit | RR Compatibility Index | Auction Priority Tier | Estimated Price | ROI Value per Cr |
 | :---: | :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
-| **1** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | **12.59** | 34 | 85.7% | 1.03 | **12.71** | 6.88 | **13.10** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.31** |
-| **2** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | **10.09** | 31 | 82.9% | 1.03 | **10.39** | 7.61 | **11.94** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.40** |
-| **3** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | **10.48** | 36 | 96.4% | 1.03 | **10.14** | 5.73 | **10.44** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.04** |
-| **4** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | **8.78** | 29 | 61.9% | 1.00 | **8.78** | 4.26 | **9.19** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.08** |
-| **5** | **Kagiso Rabada** | `3628` | Bowler | Powerplay Containment | **8.10** | 32 | 72.9% | 1.00 | **7.94** | 5.31 | **9.08** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.21** |
-| **6** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | **7.25** | 33 | 107.1% | 1.03 | **7.32** | 5.89 | **9.08** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.21** |
-| **7** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter | **7.92** | 22 | 91.1% | 1.03 | **8.64** | 6.44 | **8.82** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.47** |
-| **8** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | **9.94** | 37 | 105.7% | 1.03 | **9.01** | 3.58 | **8.62** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.15** |
-| **9** | **Priyansh Arya** | `25669` | Batter | Top-Order Boundary Destroyer | **10.36** | 26 | 110.7% | 1.00 | **10.36** | 9.75 | **8.53** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.71** |
-| **10** | **Shreyas Iyer** | `3647` | Batter | Middle-Order Power Enforcer | **9.75** | 33 | 103.6% | 1.03 | **9.85** | 4.74 | **8.52** | Tier 3: Tactical Depth / Trade Option | ₹7.0 Cr | **1.22** |
-| **11** | **Abhishek Sharma** | `6281` | Batter | Top-Order Boundary Destroyer | **11.12** | 27 | 98.6% | 1.03 | **11.45** | 8.38 | **8.47** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.69** |
-| **12** | **Varun Chakravarthy** | `6256` | Bowler | Middle-Phase Hunter | **8.99** | 36 | 90.0% | 1.03 | **8.61** | 5.43 | **8.42** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.40** |
+| **1** | **Rajat Patidar** | `5039` | Batter | Middle-Order Power Enforcer | **12.67** | 34 | 85.7% | 1.03 | **12.78** | 6.88 | **13.15** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.32** |
+| **2** | **Tim David** | `6396` | Batter | Death Finisher / Clutch Hitter | **10.20** | 31 | 82.9% | 1.03 | **10.51** | 7.61 | **12.02** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.41** |
+| **3** | **Heinrich Klaasen** | `4260` | Batter | Middle-Order Power Enforcer | **10.50** | 36 | 96.4% | 1.03 | **10.16** | 5.73 | **10.45** | Tier 1: Primary Must-Acquire Target | ₹10.0 Cr | **1.04** |
+| **4** | **Ashutosh Sharma** | `8101` | Batter | Death Finisher / Clutch Hitter | **8.95** | 29 | 61.9% | 1.00 | **8.95** | 4.26 | **9.30** | Tier 1: Primary Must-Acquire Target | ₹8.5 Cr | **1.09** |
+| **5** | **Kagiso Rabada** | `3628` | Bowler | Powerplay Containment | **8.16** | 32 | 72.9% | 1.00 | **8.00** | 5.31 | **9.12** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.22** |
+| **6** | **Mohammed Siraj** | `5944` | Bowler | Powerplay Containment | **7.29** | 33 | 107.1% | 1.03 | **7.36** | 5.89 | **9.12** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.22** |
+| **7** | **Noor Ahmad** | `7967` | Bowler | Middle-Phase Hunter | **7.97** | 22 | 91.1% | 1.03 | **8.70** | 6.44 | **8.86** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.48** |
+| **8** | **Bhuvneshwar Kumar** | `360` | Bowler | Powerplay Containment | **10.03** | 37 | 105.7% | 1.03 | **9.10** | 3.58 | **8.68** | Tier 1: Primary Must-Acquire Target | ₹7.5 Cr | **1.16** |
+| **9** | **Shreyas Iyer** | `3647` | Batter | Middle-Order Crisis Rebuilder | **9.77** | 33 | 103.6% | 1.03 | **9.87** | 4.74 | **8.53** | Tier 3: Tactical Depth / Trade Option | ₹7.0 Cr | **1.22** |
+| **10** | **Priyansh Arya** | `25669` | Batter | Top-Order Boundary Destroyer | **10.33** | 26 | 110.7% | 1.00 | **10.33** | 9.75 | **8.52** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.70** |
+| **11** | **Abhishek Sharma** | `6281` | Batter | Top-Order Boundary Destroyer | **11.19** | 27 | 98.6% | 1.03 | **11.53** | 8.38 | **8.50** | Tier 3: Tactical Depth / Trade Option | ₹5.0 Cr | **1.70** |
+| **12** | **Varun Chakravarthy** | `6256` | Bowler | Middle-Phase Hunter | **9.09** | 36 | 90.0% | 1.03 | **8.71** | 5.43 | **8.48** | Tier 2: Emerging Domestic Steal | ₹6.0 Cr | **1.41** |
 
 ---
 
