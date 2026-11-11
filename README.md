@@ -34,16 +34,16 @@ The following ordered selections represent the mathematically verified Top 10 ba
 
 | Rank | Player Name | Player ID | Tactical Archetype | Effective Recency Balls ($N_{\text{eff}}$) | 2026 IPL Balls | Recency Clutch SR | Recency Clutch Avg | 2026 Clutch SR | IPL Seasons | Composite Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1** | **Vaibhav Sooryavanshi** | `50284` | Top-Order Accelerator | 325.5 | 269 | **228.6** | **58.8** | **231.2** | 2 | **10.74** |
-| **2** | **Abhishek Sharma** | `6281` | Top-Order Accelerator | 431.4 | 246 | **197.2** | **37.2** | **207.7** | 5 | **10.35** |
-| **3** | **Heinrich Klaasen** | `4260` | Middle-Order Crisis Rebuilder | 532.8 | 354 | **171.1** | **46.6** | **163.3** | 4 | **8.71** |
-| **4** | **Priyansh Arya** | `25669` | Top-Order Accelerator | 296.7 | 157 | **207.4** | **34.2** | **226.8** | 2 | **8.65** |
-| **5** | **Rajat Patidar** | `5039` | Middle-Order Crisis Rebuilder | 301.3 | 161 | **184.1** | **42.3** | **208.7** | 4 | **8.64** |
-| **6** | **Shreyas Iyer** | `3647` | Middle-Order Crisis Rebuilder | 452.2 | 223 | **166.1** | **59.2** | **162.8** | 4 | **8.62** |
-| **7** | **Mitchell Marsh** | `818` | Top-Order Accelerator | 499.1 | 288 | **165.9** | **47.6** | **168.1** | 5 | **8.32** |
-| **8** | **Prabhsimran Singh** | `7216` | Top-Order Accelerator | 488.6 | 247 | **169.5** | **42.8** | **177.3** | 5 | **8.19** |
-| **9** | **Lokesh Rahul** | `953` | Top-Order Accelerator | 589.0 | 299 | **160.9** | **50.3** | **179.3** | 5 | **8.17** |
-| **10** | **Ishan Kishan** | `4117` | Top-Order Accelerator | 526.6 | 311 | **170.1** | **40.5** | **181.4** | 5 | **8.01** |
+| **1** | **Vaibhav Sooryavanshi** | `50284` | Top-Order Boundary Destroyer | 325.5 | 269 | **228.6** | **58.8** | **231.2** | 2 | **10.85** |
+| **2** | **Abhishek Sharma** | `6281` | Top-Order Boundary Destroyer | 431.4 | 246 | **197.2** | **37.2** | **207.7** | 5 | **10.51** |
+| **3** | **Rajat Patidar** | `5039` | Middle-Order Power Enforcer | 301.3 | 161 | **184.1** | **42.3** | **208.7** | 4 | **9.40** |
+| **4** | **Tim David** | `6396` | Death Finisher / Clutch Hitter | 203.0 | 109 | **189.7** | **34.6** | **204.6** | 5 | **9.06** |
+| **5** | **Shreyas Iyer** | `3647` | Middle-Order Crisis Rebuilder | 452.2 | 223 | **166.1** | **59.2** | **162.8** | 4 | **8.75** |
+| **6** | **Priyansh Arya** | `25669` | Top-Order Boundary Destroyer | 296.7 | 157 | **207.4** | **34.2** | **226.8** | 2 | **8.72** |
+| **7** | **Heinrich Klaasen** | `4260` | Middle-Order Power Enforcer | 532.8 | 354 | **171.1** | **46.6** | **163.3** | 4 | **8.71** |
+| **8** | **Mitchell Marsh** | `818` | Top-Order Anchor / Stabilizer | 499.1 | 288 | **165.9** | **47.6** | **168.1** | 5 | **8.32** |
+| **9** | **Prabhsimran Singh** | `7216` | Top-Order Dynamic Stroke-Maker | 488.6 | 247 | **169.5** | **42.8** | **177.3** | 5 | **8.19** |
+| **10** | **Lokesh Rahul** | `953` | Top-Order Anchor / Stabilizer | 589.0 | 299 | **160.9** | **50.3** | **179.3** | 5 | **8.17** |
 
 *Audited Outliers:* **Ryan Rickelton** drops to **Rank #13**; **Josh Inglis** drops to **Rank #14**; **Marcus Stoinis** drops to **Rank #28**; **Andre Russell** sits at **Rank #70**; **Suryakumar Yadav** sits at **Rank #31**.
 
@@ -72,16 +72,16 @@ The following ordered selections represent the mathematically verified Top 10 ba
 
 | Overall Rank | Player Name | Player ID | Primary Discipline | Effective Recency Balls ($N_{\text{eff}}$) | 2026 IPL Balls | Key Clutch Metric | Composite Clutch Score |
 | :---: | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
-| **1** | **Vaibhav Sooryavanshi** | `50284` | Batter | 325.5 | 269 | **228.6 SR** (58.8 Avg) | **10.74** |
-| **2** | **Abhishek Sharma** | `6281` | Batter | 431.4 | 246 | **197.2 SR** (37.2 Avg) | **10.35** |
+| **1** | **Vaibhav Sooryavanshi** | `50284` | Batter | 325.5 | 269 | **228.6 SR** (58.8 Avg) | **10.85** |
+| **2** | **Abhishek Sharma** | `6281` | Batter | 431.4 | 246 | **197.2 SR** (37.2 Avg) | **10.51** |
 | **3** | **Sunil Narine** | `781` | Bowler | 418.8 | 243 | **7.27 Econ** (22.1 b/wkt) | **9.65** |
-| **4** | **Bhuvneshwar Kumar** | `360` | Bowler | 455.2 | 232 | **8.51 Econ** (17.0 b/wkt) | **8.73** |
-| **5** | **Heinrich Klaasen** | `4260` | Batter | 532.8 | 354 | **171.1 SR** (46.6 Avg) | **8.71** |
-| **6** | **Priyansh Arya** | `25669` | Batter | 296.7 | 157 | **207.4 SR** (34.2 Avg) | **8.65** |
-| **7** | **Rajat Patidar** | `5039` | Batter | 301.3 | 161 | **184.1 SR** (42.3 Avg) | **8.64** |
-| **8** | **Shreyas Iyer** | `3647` | Batter | 452.2 | 223 | **166.1 SR** (59.2 Avg) | **8.62** |
-| **9** | **Mitchell Marsh** | `818` | Batter | 499.1 | 288 | **165.9 SR** (47.6 Avg) | **8.32** |
-| **10** | **Prabhsimran Singh** | `7216` | Batter | 488.6 | 247 | **169.5 SR** (42.8 Avg) | **8.19** |
+| **4** | **Rajat Patidar** | `5039` | Batter | 301.3 | 161 | **184.1 SR** (42.3 Avg) | **9.40** |
+| **5** | **Tim David** | `6396` | Batter | 203.0 | 109 | **189.7 SR** (34.6 Avg) | **9.06** |
+| **6** | **Shreyas Iyer** | `3647` | Batter | 452.2 | 223 | **166.1 SR** (59.2 Avg) | **8.75** |
+| **7** | **Bhuvneshwar Kumar** | `360` | Bowler | 455.2 | 232 | **8.51 Econ** (17.0 b/wkt) | **8.73** |
+| **8** | **Priyansh Arya** | `25669` | Batter | 296.7 | 157 | **207.4 SR** (34.2 Avg) | **8.72** |
+| **9** | **Heinrich Klaasen** | `4260` | Batter | 532.8 | 354 | **171.1 SR** (46.6 Avg) | **8.71** |
+| **10** | **Mitchell Marsh** | `818` | Batter | 499.1 | 288 | **165.9 SR** (47.6 Avg) | **8.32** |
 
 ---
 

@@ -250,16 +250,6 @@ def run_clutch_ranking_engine():
     primary_order.columns = ['striker_id', 'median_batting_order']
     bat_summary = bat_summary.merge(primary_order, on='striker_id', how='left')
 
-    def get_bat_archetype(order):
-        if order <= 3.0:
-            return "Top-Order Accelerator"
-        elif order <= 5.5:
-            return "Middle-Order Crisis Rebuilder"
-        else:
-            return "Death Finisher"
-
-    bat_summary['archetype'] = bat_summary['median_batting_order'].apply(get_bat_archetype)
-
     norm_sr = np.clip((bat_summary['shrunk_rec_sr'] - 120.0) / 8.0, 0.0, 10.0)
     norm_avg = np.clip((bat_summary['shrunk_rec_avg'] - 15.0) / 3.0, 0.0, 10.0)
     norm_wpa = np.clip((bat_summary['wpa_rate_per_100'] + 0.5) * 4.0, 0.0, 10.0)
@@ -267,11 +257,21 @@ def run_clutch_ranking_engine():
     # Multi-dimensional Batting Quality: 45% Strike Rate, 30% Batting Average, 25% Win Probability Added
     raw_quality_bat = norm_sr * 0.45 + norm_avg * 0.30 + norm_wpa * 0.25
 
-    # 180 effective balls required for full confidence (prevents small-sample outliers)
-    bat_summary['sample_confidence'] = np.clip(bat_summary['eff_balls'] / 180.0, 0.0, 1.0)
+    # Positional Opportunity Normalization:
+    # Openers face 65-70% of match deliveries; death finishers physically face 50-80 balls a season max.
+    def get_expected_bat_balls(order):
+        if order <= 3.5:
+            return 140.0, 180.0
+        elif order <= 5.5:
+            return 100.0, 130.0
+        else:
+            return 60.0, 80.0
 
-    # Proven Clutch Durability / Experience Scaling: +20% bonus for seasoned workhorses (180 to 480+ balls)
-    bat_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bat_summary['eff_balls'] - 180.0) / 300.0, 0.0, 1.0)
+    bat_summary['exp_b26'], bat_summary['exp_eff'] = zip(*bat_summary['median_batting_order'].apply(get_expected_bat_balls))
+
+    bat_summary['sample_confidence'] = np.clip(bat_summary['eff_balls'] / bat_summary['exp_eff'], 0.0, 1.0)
+    bat_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bat_summary['eff_balls'] - bat_summary['exp_eff']) / (bat_summary['exp_eff'] * 1.5), 0.0, 1.0)
+    bat_summary['reg_factor'] = np.clip(bat_summary['b26_balls'] / bat_summary['exp_b26'], 0.70, 1.0)
 
     # Multi-season continuity and pedigree
     ipl_deliv = df[df['comp_name'].str.contains('IPL', na=False)]
@@ -281,30 +281,53 @@ def run_clutch_ranking_engine():
     bat_summary['balls_24_25'] = bat_summary['striker_id'].map(bat_24_25).fillna(0)
 
     def get_bat_continuity(row):
-        if row['b26_balls'] >= 30 and row['balls_24_25'] == 0:
+        if row['b26_balls'] >= 25 and row['balls_24_25'] == 0:
             if row['ipl_seasons'] > 1: # Absent during hiatus
                 return 0.80
         return 1.00
 
     bat_summary['continuity_factor'] = bat_summary.apply(get_bat_continuity, axis=1)
     bat_summary['pedigree_bonus'] = 1.0 + 0.05 * np.clip(bat_summary['ipl_seasons'] - 1.0, 0.0, 3.0)
-    bat_summary['reg_factor'] = np.clip(bat_summary['b26_balls'] / 140.0, 0.70, 1.0)
 
     def get_bat_factor(row):
-        if row['b26_balls'] >= 120:
+        min_surge_balls = row['exp_b26'] * 0.85
+        if row['b26_balls'] >= min_surge_balls:
             if row['b26_sr'] >= 200.0:
-                return 1.10 # Surge bonus (Arya, Abhishek, Patidar, Sooryavanshi)
+                return 1.10 # Surge bonus (Arya, Abhishek, Patidar, Sooryavanshi, Tim David)
             elif row['b26_sr'] < 160.0:
                 return 0.80 # Slump penalty (Suryakumar Yadav 157)
             else:
                 return 1.00
-        elif row['b26_balls'] >= 40:
+        elif row['b26_balls'] >= row['exp_b26'] * 0.35:
             if row['b26_sr'] < 150.0:
                 return 0.80
             else:
                 return 1.00
         else:
             return 0.60 # Inactive in 2026 IPL (Russell, Jake Fraser-McGurk)
+
+    bat_summary['form_factor'] = bat_summary.apply(get_bat_factor, axis=1)
+
+    def get_refined_bat_archetype(row):
+        order = row['median_batting_order']
+        sr = row['rec_clutch_sr']
+        avg = row['rec_clutch_avg']
+        if order <= 3.0:
+            if sr >= 195.0:
+                return "Top-Order Boundary Destroyer"
+            elif avg >= 45.0:
+                return "Top-Order Anchor / Stabilizer"
+            else:
+                return "Top-Order Dynamic Stroke-Maker"
+        elif order <= 5.5:
+            if sr >= 170.0:
+                return "Middle-Order Power Enforcer"
+            else:
+                return "Middle-Order Crisis Rebuilder"
+        else:
+            return "Death Finisher / Clutch Hitter"
+
+    bat_summary['archetype'] = bat_summary.apply(get_refined_bat_archetype, axis=1)
 
     bat_summary['form_factor'] = bat_summary.apply(get_bat_factor, axis=1)
     bat_summary['composite_score_a'] = (
