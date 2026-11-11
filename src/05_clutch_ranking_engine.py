@@ -4,8 +4,8 @@ import numpy as np
 
 def run_clutch_ranking_engine():
     print("=" * 85)
-    print("RAJASTHAN ROYALS CLUTCH RANKING ENGINE (FULLY OPTIMIZED & DECAY CALIBRATED)")
-    print("Zero Outliers | 140/120-Ball Sample Confidence | 2026 Active In-Season Factor")
+    print("RAJASTHAN ROYALS CLUTCH RANKING ENGINE (FULLY CALIBRATED & BIAS/VARIANCE OPTIMIZED)")
+    print("Zero Outliers | Wicket Quality | Opponent Scaling | Consistency CV | Dot-Ball Control | Era-Norm")
     print("=" * 85)
 
     print("--> Loading match clutch data and delivery telemetry...")
@@ -29,25 +29,69 @@ def run_clutch_ranking_engine():
     # 4. Innings 2 Chasing Asymmetry Factor (1.15x for chasing targets)
     df['chase_multiplier'] = np.where(df['innings'] == 2, 1.15, 1.00)
 
-    # Combined Delivery Weight
-    df['deliv_w'] = df['season_weight'] * df['comp_quality'] * df['match_importance_weight'] * df['chase_multiplier']
+    # 5. Era Normalization: IPL RPO by season (Impact Player Rule Era Correction)
+    season_rpo = df[df['is_ipl']].groupby('year')['ball_total_runs'].mean() * 6.0
+    era_map = season_rpo.to_dict()
+    mean_era = 8.80
+    df['era_factor'] = df['year'].map(era_map).fillna(mean_era) / mean_era
 
-    # Wicket attribution
+    # 6. Opponent Quality / Strength of Schedule Facing Adjustment (κ_opp)
+    try:
+        bowl_scores = pd.read_parquet('data/player_clutch_bowling.parquet').set_index('bowler_id')['composite_score_a'].to_dict()
+        bat_scores = pd.read_parquet('data/player_clutch_batting.parquet').set_index('striker_id')['composite_score_a'].to_dict()
+    except Exception:
+        bowl_scores, bat_scores = {}, {}
+
+    df['opp_bowl_score'] = df['bowler_id'].map(bowl_scores).fillna(2.0)
+    df['opp_bat_score'] = df['striker_id'].map(bat_scores).fillna(2.5)
+
+    df['kappa_bat'] = 1.0 + 0.05 * np.clip((df['opp_bowl_score'] - 2.0) / 4.0, -1.0, 1.0)
+    df['kappa_bowl'] = 1.0 + 0.05 * np.clip((df['opp_bat_score'] - 2.5) / 4.0, -1.0, 1.0)
+
+    # 7. Wicket Quality & Dismissal Leverage Attribution
+    # Top Order (1-4): 1.20x, Middle (5-7): 1.00x, Tailenders (8-11): 0.60x
+    df['wkt_quality_weight'] = np.where(df['batting_order'] <= 4, 1.20, np.where(df['batting_order'] <= 7, 1.00, 0.60))
     df['is_striker_out'] = (df['dismissed_player_id'] == df['striker_id']).astype(int)
     df['is_bowler_wkt'] = (df['is_wicket'] & ~df['dismissal_type'].isin(['RunOut', 'Retire Out', 'Obstracting the field', 'Obstructing the field'])).astype(int)
+    df['quality_bowler_wkt'] = df['is_bowler_wkt'] * df['wkt_quality_weight']
 
-    # 5. Venue-Par Environmental Pitch Benchmark & Phase Benchmarking
-    df['venue_ball_par'] = df['venue_par'] / 120.0
+    # 8. Venue-Par Environmental Pitch Benchmark & Phase Benchmarking with Era Adjustment
+    df['venue_ball_par'] = (df['venue_par'] / 120.0) * df['era_factor']
     ipl_df = df[df['is_ipl']].copy()
     ipl_df['phase'] = np.where(ipl_df['overid'] < 6, 'powerplay', np.where(ipl_df['overid'] < 16, 'middle', 'death'))
     phase_stats = ipl_df.groupby('phase')['ball_total_runs'].mean().to_dict()
     df['phase'] = np.where(df['overid'] < 6, 'powerplay', np.where(df['overid'] < 16, 'middle', 'death'))
-    df['phase_exp_runs'] = df['phase'].map(phase_stats)
+    df['phase_exp_runs'] = df['phase'].map(phase_stats) * df['era_factor']
 
     df['runs_saved_vs_par'] = (df['venue_ball_par'] * 0.50 + df['phase_exp_runs'] * 0.50) - df['ball_total_runs']
     df['runs_above_par'] = df['runs'] - (df['venue_ball_par'] * 0.50 + df['phase_exp_runs'] * 0.50)
 
+    # Combined Delivery Weights
+    df['deliv_w_bat'] = df['season_weight'] * df['comp_quality'] * df['match_importance_weight'] * df['chase_multiplier'] * df['kappa_bat']
+    df['deliv_w_bowl'] = df['season_weight'] * df['comp_quality'] * df['match_importance_weight'] * df['chase_multiplier'] * df['kappa_bowl']
+
     h_hp = df[df['pressure_index'] >= 6.0].copy()
+
+    # 9. Match-to-Match Consistency Telemetry (CV calculation)
+    match_bat = h_hp[h_hp['is_legal_ball'] == 1].groupby(['striker_id', 'match_id']).agg(
+        m_runs=('runs', 'sum'),
+        m_balls=('runs', 'count')
+    ).reset_index()
+    match_bat = match_bat[match_bat['m_balls'] >= 6]
+    match_bat['m_sr'] = (match_bat['m_runs'] / match_bat['m_balls']) * 100.0
+    bat_cv = match_bat.groupby('striker_id')['m_sr'].agg(['mean', 'std']).reset_index()
+    bat_cv['cv_sr'] = (bat_cv['std'] / np.maximum(bat_cv['mean'], 1.0)).fillna(0.40)
+    bat_cv_map = bat_cv.set_index('striker_id')['cv_sr'].to_dict()
+
+    match_bowl = h_hp[h_hp['is_legal_ball'] == 1].groupby(['bowler_id', 'match_id']).agg(
+        m_runs=('ball_total_runs', 'sum'),
+        m_balls=('is_legal_ball', 'count')
+    ).reset_index()
+    match_bowl = match_bowl[match_bowl['m_balls'] >= 6]
+    match_bowl['m_econ'] = (match_bowl['m_runs'] / match_bowl['m_balls']) * 6.0
+    bowl_cv = match_bowl.groupby('bowler_id')['m_econ'].agg(['mean', 'std']).reset_index()
+    bowl_cv['cv_econ'] = (bowl_cv['std'] / np.maximum(bowl_cv['mean'], 1.0)).fillna(0.45)
+    bowl_cv_map = bowl_cv.set_index('bowler_id')['cv_econ'].to_dict()
 
     # 2026 IPL specific telemetry
     ipl_26 = h_hp[(h_hp['is_ipl']) & (h_hp['year'] == 2026)]
@@ -61,13 +105,13 @@ def run_clutch_ranking_engine():
     # =========================================================================
     # 1. BOWLERS
     # =========================================================================
-    h_hp['w_balls_bw'] = h_hp['is_legal_ball'] * h_hp['deliv_w']
-    h_hp['w_runs_bw'] = h_hp['ball_total_runs'] * h_hp['deliv_w']
-    h_hp['w_wkts_bw'] = h_hp['is_bowler_wkt'] * h_hp['deliv_w']
-    h_hp['w_dots_bw'] = h_hp['is_dot'] * h_hp['deliv_w']
-    h_hp['w_bounds_bw'] = h_hp['is_boundary'] * h_hp['deliv_w']
-    h_hp['w_surplus_bw'] = h_hp['runs_saved_vs_par'] * h_hp['deliv_w']
-    h_hp['w_wpa_bw'] = h_hp['delta_wp_bowl'] * h_hp['deliv_w']
+    h_hp['w_balls_bw'] = h_hp['is_legal_ball'] * h_hp['deliv_w_bowl']
+    h_hp['w_runs_bw'] = h_hp['ball_total_runs'] * h_hp['deliv_w_bowl']
+    h_hp['w_wkts_bw'] = h_hp['quality_bowler_wkt'] * h_hp['deliv_w_bowl']
+    h_hp['w_dots_bw'] = h_hp['is_dot'] * h_hp['deliv_w_bowl']
+    h_hp['w_bounds_bw'] = h_hp['is_boundary'] * h_hp['deliv_w_bowl']
+    h_hp['w_surplus_bw'] = h_hp['runs_saved_vs_par'] * h_hp['deliv_w_bowl']
+    h_hp['w_wpa_bw'] = h_hp['delta_wp_bowl'] * h_hp['deliv_w_bowl']
 
     bowl_summary = h_hp.groupby(['bowler_id', 'bowler_name']).agg(
         pressure_matches=('match_id', 'nunique'),
@@ -103,7 +147,7 @@ def run_clutch_ranking_engine():
     bowl_summary['rec_clutch_econ'] = (bowl_summary['eff_runs'] / np.maximum(bowl_summary['eff_balls'], 1)) * 6.0
     bowl_summary['clutch_economy'] = (bowl_summary['total_clutch_runs'] / np.maximum(bowl_summary['total_clutch_balls'], 1)) * 6.0
 
-    # Bowling Strike Rate (Balls per Wicket) & Bowling Average (Runs per Wicket)
+    # Quality-Adjusted Bowling Strike Rate (Balls per Quality Wicket) & Quality-Adjusted Bowling Average
     bowl_summary['shrunk_wkt_rate'] = (bowl_summary['eff_wkts'] * 100.0 + K_SHRINKAGE * (lg_wkt_rate / 100.0) * 100.0) / (bowl_summary['eff_balls'] + K_SHRINKAGE)
     bowl_summary['shrunk_balls_per_wkt'] = 100.0 / np.maximum(bowl_summary['shrunk_wkt_rate'], 1e-4)
     bowl_summary['rec_clutch_sr'] = bowl_summary['eff_balls'] / np.maximum(bowl_summary['eff_wkts'], 1)
@@ -149,10 +193,8 @@ def run_clutch_ranking_engine():
     # Multi-dimensional Bowling Quality: 25% Dot, 20% Avoid, 20% Surplus/Econ, 20% Strike Rate, 15% Bowling Avg
     raw_quality_bowl = norm_dot * 0.25 + norm_avoid * 0.20 + norm_surplus * 0.20 + norm_strike * 0.20 + norm_bowl_avg * 0.15
 
-    # 180 effective balls required for full confidence (prevents small-sample outliers like Saurabh Dubey)
+    # 180 effective balls required for full confidence
     bowl_summary['sample_confidence'] = np.clip(bowl_summary['eff_balls'] / 180.0, 0.0, 1.0)
-
-    # Proven Clutch Durability / Experience Scaling: +20% bonus for seasoned workhorses (180 to 480+ balls)
     bowl_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bowl_summary['eff_balls'] - 180.0) / 300.0, 0.0, 1.0)
 
     # Multi-season continuity and pedigree
@@ -164,7 +206,7 @@ def run_clutch_ranking_engine():
 
     def get_bowl_continuity(row):
         if row['b26_balls'] >= 30 and row['balls_24_25'] == 0:
-            if row['ipl_seasons'] > 1: # Absent during 2024-2025 hiatus (Holder)
+            if row['ipl_seasons'] > 1: # Absent during hiatus
                 return 0.80
         return 1.00
 
@@ -174,27 +216,26 @@ def run_clutch_ranking_engine():
 
     def get_bowl_factor(row):
         if row['b26_balls'] >= 140:
-            if row['b26_econ'] > 11.0:
-                return 0.70 # Severe collapse (Harshal Patel 12.56)
-            elif row['b26_econ'] > 10.0:
-                return 0.85
-            elif row['b26_econ'] < 8.0:
-                return 1.10 # Surge bonus (Narine 6.91, Bhuvi 7.76)
-            else:
-                return 1.00
+            if row['b26_econ'] > 11.0: return 0.70
+            elif row['b26_econ'] > 10.0: return 0.85
+            elif row['b26_econ'] < 8.0: return 1.10
+            else: return 1.00
         elif row['b26_balls'] >= 40:
-            if row['b26_econ'] > 11.0:
-                return 0.70
-            else:
-                return 1.00
-        else:
-            return 0.60 # Inactive in 2026 IPL (Mustafizur, Wood, Gowtham)
+            if row['b26_econ'] > 11.0: return 0.70
+            else: return 1.00
+        else: return 0.60
 
     bowl_summary['form_factor'] = bowl_summary.apply(get_bowl_factor, axis=1)
+
+    # Consistency stability factor (Variance Reduction)
+    bowl_summary['cv_econ'] = bowl_summary['bowler_id'].map(bowl_cv_map).fillna(0.45)
+    bowl_summary['stability_factor'] = 1.0 + 0.10 * np.clip((0.45 - bowl_summary['cv_econ']) / 0.20, -1.0, 1.0)
+
     bowl_summary['composite_score_a'] = (
         raw_quality_bowl * bowl_summary['sample_confidence'] * bowl_summary['form_factor'] *
         bowl_summary['durability_bonus'] * bowl_summary['reg_factor'] *
-        bowl_summary['continuity_factor'] * bowl_summary['pedigree_bonus']
+        bowl_summary['continuity_factor'] * bowl_summary['pedigree_bonus'] *
+        bowl_summary['stability_factor']
     )
     bowl_summary['composite_score_b'] = bowl_summary['composite_score_a']
 
@@ -212,11 +253,12 @@ def run_clutch_ranking_engine():
     # =========================================================================
     # 2. BATTERS
     # =========================================================================
-    h_hp['w_balls_bat'] = h_hp['is_legal_ball'] * h_hp['deliv_w']
-    h_hp['w_runs_bat'] = h_hp['runs'] * h_hp['deliv_w']
-    h_hp['w_outs_bat'] = h_hp['is_striker_out'] * h_hp['deliv_w']
-    h_hp['w_wpa_bat'] = h_hp['delta_wp_bat'] * h_hp['deliv_w']
-    h_hp['w_surplus_bat'] = h_hp['runs_above_par'] * h_hp['deliv_w']
+    h_hp['w_balls_bat'] = h_hp['is_legal_ball'] * h_hp['deliv_w_bat']
+    h_hp['w_runs_bat'] = h_hp['runs'] * h_hp['deliv_w_bat']
+    h_hp['w_outs_bat'] = h_hp['is_striker_out'] * h_hp['deliv_w_bat']
+    h_hp['w_wpa_bat'] = h_hp['delta_wp_bat'] * h_hp['deliv_w_bat']
+    h_hp['w_surplus_bat'] = h_hp['runs_above_par'] * h_hp['deliv_w_bat']
+    h_hp['w_dots_bat'] = h_hp['is_dot'] * h_hp['deliv_w_bat']
 
     # Pace vs spin splits
     h_hp['w_balls_spin'] = (h_hp['pace_or_spin'] == 'Spin') * h_hp['w_balls_bat']
@@ -235,6 +277,7 @@ def run_clutch_ranking_engine():
         eff_outs=('w_outs_bat', 'sum'),
         eff_wpa=('w_wpa_bat', 'sum'),
         eff_surplus=('w_surplus_bat', 'sum'),
+        eff_dots=('w_dots_bat', 'sum'),
         spin_balls=('w_balls_spin', 'sum'),
         spin_runs=('w_runs_spin', 'sum'),
         pace_balls=('w_balls_pace', 'sum'),
@@ -249,6 +292,7 @@ def run_clutch_ranking_engine():
     bat_summary['b26_outs'] = bat_summary['striker_id'].map(outs_26_bat).fillna(0)
     bat_summary['b26_sr'] = (bat_summary['b26_runs'] / np.maximum(bat_summary['b26_balls'], 1)) * 100.0
 
+    K_SHRINKAGE = 40.0
     lg_sr = (bat_summary['eff_runs'].sum() / np.maximum(bat_summary['eff_balls'].sum(), 1)) * 100.0
     bat_summary['rec_clutch_sr'] = (bat_summary['eff_runs'] / np.maximum(bat_summary['eff_balls'], 1)) * 100.0
     bat_summary['shrunk_rec_sr'] = (bat_summary['eff_runs'] * 100.0 + K_SHRINKAGE * lg_sr) / (bat_summary['eff_balls'] + K_SHRINKAGE)
@@ -260,6 +304,14 @@ def run_clutch_ranking_engine():
     bat_summary['shrunk_rec_avg'] = (bat_summary['eff_runs'] + K_OUTS * lg_avg) / (bat_summary['eff_outs'] + K_OUTS)
     bat_summary['wpa_rate_per_100'] = (bat_summary['eff_wpa'] / np.maximum(bat_summary['eff_balls'], 1)) * 100.0
     bat_summary['surplus_per_ball'] = bat_summary['eff_surplus'] / np.maximum(bat_summary['eff_balls'], 1)
+
+    # Dot-Ball Volatility Factor (Variance Reduction)
+    bat_summary['dot_pct'] = bat_summary['eff_dots'] / np.maximum(bat_summary['eff_balls'], 1)
+    bat_summary['dot_suppression_factor'] = 1.0 + 0.15 * np.clip((0.35 - bat_summary['dot_pct']) / 0.15, -1.0, 1.0)
+
+    # Match-to-Match Consistency Factor (Variance Reduction)
+    bat_summary['cv_sr'] = bat_summary['striker_id'].map(bat_cv_map).fillna(0.40)
+    bat_summary['stability_factor'] = 1.0 + 0.10 * np.clip((0.40 - bat_summary['cv_sr']) / 0.20, -1.0, 1.0)
 
     all_bat = df.groupby('striker_id').agg(
         all_balls=('is_legal_ball', 'sum'),
@@ -282,11 +334,9 @@ def run_clutch_ranking_engine():
     norm_wpa = np.clip((bat_summary['wpa_rate_per_100'] + 0.5) * 4.0, 0.0, 10.0)
     norm_surplus_bat = np.clip((bat_summary['surplus_per_ball'] + 0.20) / 0.60 * 10.0, 0.0, 10.0)
 
-    # Multi-dimensional Batting Quality: 40% Strike Rate, 25% Batting Average, 20% WPA, 15% Pitch-Par Surplus
     raw_quality_bat = norm_sr * 0.40 + norm_avg * 0.25 + norm_wpa * 0.20 + norm_surplus_bat * 0.15
 
-    # Positional Opportunity Normalization:
-    # Openers face 65-70% of match deliveries; death finishers physically face 50-80 balls a season max.
+    # Positional Opportunity Normalization
     def get_expected_bat_balls(order):
         if order <= 3.5:
             return 140.0, 180.0
@@ -301,7 +351,6 @@ def run_clutch_ranking_engine():
     bat_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bat_summary['eff_balls'] - bat_summary['exp_eff']) / (bat_summary['exp_eff'] * 1.5), 0.0, 1.0)
     bat_summary['reg_factor'] = np.clip(bat_summary['b26_balls'] / bat_summary['exp_b26'], 0.70, 1.0)
 
-    # Multi-season continuity and pedigree
     ipl_deliv = df[df['comp_name'].str.contains('IPL', na=False)]
     bat_seasons = ipl_deliv.groupby('striker_id')['comp_name'].nunique().to_dict()
     bat_24_25 = ipl_deliv[ipl_deliv['comp_name'].isin(['IPL 2024', 'IPL 2025'])].groupby('striker_id')['is_legal_ball'].sum().to_dict()
@@ -310,7 +359,7 @@ def run_clutch_ranking_engine():
 
     def get_bat_continuity(row):
         if row['b26_balls'] >= 25 and row['balls_24_25'] == 0:
-            if row['ipl_seasons'] > 1: # Absent during hiatus
+            if row['ipl_seasons'] > 1:
                 return 0.80
         return 1.00
 
@@ -321,9 +370,9 @@ def run_clutch_ranking_engine():
         min_surge_balls = row['exp_b26'] * 0.85
         if row['b26_balls'] >= min_surge_balls:
             if row['b26_sr'] >= 200.0:
-                return 1.10 # Surge bonus (Arya, Abhishek, Patidar, Sooryavanshi, Tim David)
+                return 1.10
             elif row['b26_sr'] < 160.0:
-                return 0.80 # Slump penalty (Suryakumar Yadav 157)
+                return 0.80
             else:
                 return 1.00
         elif row['b26_balls'] >= row['exp_b26'] * 0.35:
@@ -332,7 +381,7 @@ def run_clutch_ranking_engine():
             else:
                 return 1.00
         else:
-            return 0.60 # Inactive in 2026 IPL (Russell, Jake Fraser-McGurk)
+            return 0.60
 
     bat_summary['form_factor'] = bat_summary.apply(get_bat_factor, axis=1)
 
@@ -357,11 +406,11 @@ def run_clutch_ranking_engine():
 
     bat_summary['archetype'] = bat_summary.apply(get_refined_bat_archetype, axis=1)
 
-    bat_summary['form_factor'] = bat_summary.apply(get_bat_factor, axis=1)
     bat_summary['composite_score_a'] = (
         raw_quality_bat * bat_summary['sample_confidence'] * bat_summary['form_factor'] *
         bat_summary['durability_bonus'] * bat_summary['reg_factor'] *
-        bat_summary['continuity_factor'] * bat_summary['pedigree_bonus']
+        bat_summary['continuity_factor'] * bat_summary['pedigree_bonus'] *
+        bat_summary['dot_suppression_factor'] * bat_summary['stability_factor']
     )
     bat_summary['composite_score_b'] = bat_summary['composite_score_a']
 
@@ -379,7 +428,7 @@ def run_clutch_ranking_engine():
     # Save parquets
     bat_summary.to_parquet("data/player_clutch_batting.parquet", index=False)
     bowl_summary.to_parquet("data/player_clutch_bowling.parquet", index=False)
-    print("--> Successfully updated and saved fully optimized clutch ratings!")
+    print("--> Successfully updated and saved fully calibrated clutch ratings!")
 
 if __name__ == '__main__':
     run_clutch_ranking_engine()
