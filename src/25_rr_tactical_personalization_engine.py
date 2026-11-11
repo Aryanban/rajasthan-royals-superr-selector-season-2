@@ -6,7 +6,7 @@ def run_rr_tactical_personalization_engine():
     print("=" * 90)
     print("RAJASTHAN ROYALS TACTICAL PERSONALIZATION & MINI-AUCTION OPTIMIZATION ENGINE")
     print("Giles Lindsay, Kumar Sangakkara & Zubin Bharucha Strategy Architecture (IPL 2027)")
-    print("SMS Jaipur Pitch Compatibility | 5 Squad Voids | Pace vs Spin Splits | 2027 Aging Curve")
+    print("SMS Jaipur Pitch Compatibility | 5 Squad Voids | 2027 Aging Curve | Workload Availability (Calib 13)")
     print("=" * 90)
 
     # 1. Load calibrated ratings
@@ -81,6 +81,37 @@ def run_rr_tactical_personalization_engine():
         elif age <= 35: return 0.96 if is_spin else 0.93
         else: return 0.93 if is_spin else 0.88 # Pacer physical maintenance discount
 
+    # Calibration 13: Workload Availability & Injury Discounting (ADF)
+    ipl_deliv = deliv[deliv['comp_name'].str.contains('IPL', na=False)]
+    bat_ipl_matches = ipl_deliv.groupby('striker_id')['match_id'].nunique().to_dict()
+    bat_ipl_seasons = ipl_deliv.groupby('striker_id')['comp_name'].nunique().to_dict()
+    bowl_ipl_matches = ipl_deliv.groupby('bowler_id')['match_id'].nunique().to_dict()
+    bowl_ipl_seasons = ipl_deliv.groupby('bowler_id')['comp_name'].nunique().to_dict()
+
+    def get_availability_metrics(pid, is_bowler=False):
+        if is_bowler:
+            matches = bowl_ipl_matches.get(pid, 0)
+            seasons = bowl_ipl_seasons.get(pid, 0)
+        else:
+            matches = bat_ipl_matches.get(pid, 0)
+            seasons = bat_ipl_seasons.get(pid, 0)
+        
+        active_seasons = max(seasons, 2)
+        expected = active_seasons * 14.0
+        rate = matches / expected if expected > 0 else 0.0
+
+        min_req = 40 if is_bowler else 35
+        if rate >= 0.75 and matches >= min_req:
+            adf = 1.03  # Iron-man durability premium
+        elif rate >= 0.55:
+            adf = 1.00  # Standard reliable regular
+        elif rate >= 0.40:
+            adf = 0.92  # Moderate fragility / squad rotation discount (-8%)
+        else:
+            adf = 0.84  # High injury risk / low availability discount (-16%)
+
+        return matches, round(rate * 100.0, 1), adf
+
     # Untouchable locked franchise pillars
     untouchables = [
         'Sanju Samson', 'Yashasvi Jaiswal', 'Riyan Parag', 'Shimron Hetmyer',
@@ -103,10 +134,12 @@ def run_rr_tactical_personalization_engine():
         sr_pace = r['clutch_sr_vs_pace']
         sms_surplus = r['sms_surplus_rate']
 
-        # Age projection to 2027
+        # Age projection & Availability Discount to 2027
         age_2027 = get_age_2027(pid)
         age_factor = get_bat_aging_factor(age_2027)
-        projected_clutch_score = clutch_score * age_factor
+        ipl_matches, avail_pct, adf = get_availability_metrics(pid, is_bowler=False)
+
+        projected_clutch_score = clutch_score * age_factor * adf
 
         # SMS Jaipur Pitch Compatibility:
         norm_spin_sr = np.clip((sr_spin - 120.0) / 8.0, 0.0, 10.0)
@@ -151,6 +184,9 @@ def run_rr_tactical_personalization_engine():
             'global_clutch_score': round(clutch_score, 2),
             'age_2027': age_2027,
             'age_factor_2027': round(age_factor, 2),
+            'ipl_matches_played': ipl_matches,
+            'ipl_availability_pct': avail_pct,
+            'availability_factor_adf': round(adf, 2),
             'projected_clutch_score_2027': round(projected_clutch_score, 2),
             'clutch_sr_vs_spin': round(sr_spin, 1),
             'clutch_sr_vs_pace': round(sr_pace, 1),
@@ -185,7 +221,9 @@ def run_rr_tactical_personalization_engine():
         is_spin = pid in spin_ids or 'Spin' in arch or 'Hunter' in arch
         age_2027 = get_age_2027(pid)
         age_factor = get_bowl_aging_factor(age_2027, is_spin)
-        projected_clutch_score = clutch_score * age_factor
+        ipl_matches, avail_pct, adf = get_availability_metrics(pid, is_bowler=True)
+
+        projected_clutch_score = clutch_score * age_factor * adf
 
         norm_sms_econ = np.clip((11.0 - sms_econ) / 5.0 * 10.0, 0.0, 10.0)
         norm_sms_dots = np.clip((sms_dots - 25.0) / 25.0 * 10.0, 0.0, 10.0)
@@ -223,6 +261,9 @@ def run_rr_tactical_personalization_engine():
             'global_clutch_score': round(clutch_score, 2),
             'age_2027': age_2027,
             'age_factor_2027': round(age_factor, 2),
+            'ipl_matches_played': ipl_matches,
+            'ipl_availability_pct': avail_pct,
+            'availability_factor_adf': round(adf, 2),
             'projected_clutch_score_2027': round(projected_clutch_score, 2),
             'clutch_sr_vs_spin': 0.0,
             'clutch_sr_vs_pace': 0.0,
@@ -243,7 +284,7 @@ def run_rr_tactical_personalization_engine():
     master_targets.to_parquet("data/rr_personalized_target_board.parquet", index=False)
     master_targets.to_csv("data/rr_personalized_target_board.csv", index=False)
 
-    print(f"SUCCESS: Built master RR Personalized Auction Target Board with 2027 Aging Projections!")
+    print(f"SUCCESS: Built master RR Personalized Auction Target Board with 2027 Aging & Availability Discounting!")
     print(f"Total evaluated players: {len(master_targets)}")
     print(f"Targetable candidates: {master_targets['auction_targetable'].sum()}")
 
@@ -251,7 +292,7 @@ def run_rr_tactical_personalization_engine():
     print("RAJASTHAN ROYALS: TIER 1 PRIMARY MUST-ACQUIRE AUCTION TARGET BOARD")
     print("=" * 90)
     t1 = master_targets[(master_targets['auction_targetable']) & (master_targets['auction_priority_tier'].str.contains('Tier 1'))].head(10)
-    cols = ['player_name', 'discipline', 'tactical_archetype', 'global_clutch_score', 'age_2027', 'projected_clutch_score_2027', 'sms_jaipur_pitch_fit', 'rr_compatibility_index', 'estimated_price_cr', 'roi_value_per_cr']
+    cols = ['player_name', 'discipline', 'tactical_archetype', 'global_clutch_score', 'age_2027', 'ipl_availability_pct', 'availability_factor_adf', 'projected_clutch_score_2027', 'sms_jaipur_pitch_fit', 'rr_compatibility_index', 'estimated_price_cr', 'roi_value_per_cr']
     print(t1[cols].to_string(index=False))
 
     print("\n" + "=" * 90)

@@ -7,6 +7,7 @@ def run_clutch_ranking_engine():
     print("RAJASTHAN ROYALS CLUTCH RANKING ENGINE (FULLY CALIBRATED & BIAS/VARIANCE OPTIMIZED)")
     print("Zero Outliers | Wicket Quality | Opponent Scaling | Consistency CV | Dot-Ball Control | Era-Norm")
     print("Non-Boundary SR (Calib 6) | Superlinear Over 19-20 Leverage (Calib 7) | Dew Index (Calib 8)")
+    print("Fielding-Independent Pitching xFIP (Calib 10) | Matchup Versatility (Calib 11) | Elasticity (Calib 12)")
     print("=" * 85)
 
     print("--> Loading match clutch data and delivery telemetry...")
@@ -38,7 +39,7 @@ def run_clutch_ranking_engine():
     mean_era = 8.80
     df['era_factor'] = df['year'].map(era_map).fillna(mean_era) / mean_era
 
-    # 6. Opponent Quality / Strength of Schedule Facing Adjustment (κ_opp)
+    # 6. Opponent Quality / Strength of Schedule Facing Adjustment (kappa_opp)
     try:
         bowl_scores = pd.read_parquet('data/player_clutch_bowling.parquet').set_index('bowler_id')['composite_score_a'].to_dict()
         bat_scores = pd.read_parquet('data/player_clutch_batting.parquet').set_index('striker_id')['composite_score_a'].to_dict()
@@ -56,6 +57,10 @@ def run_clutch_ranking_engine():
     df['is_striker_out'] = (df['dismissed_player_id'] == df['striker_id']).astype(int)
     df['is_bowler_wkt'] = (df['is_wicket'] & ~df['dismissal_type'].isin(['RunOut', 'Retire Out', 'Obstracting the field', 'Obstructing the field'])).astype(int)
     df['quality_bowler_wkt'] = df['is_bowler_wkt'] * df['wkt_quality_weight']
+
+    # Calibration 10: Clean wickets (Fielding-Independent Pitching)
+    clean_types = {'Bowled', 'LBW', 'Stump', 'Hit Wicket'}
+    df['is_clean_wkt'] = (df['is_bowler_wkt'] == 1) & (df['dismissal_type'].isin(clean_types)).astype(int)
 
     # 8. Calibration 7: Continuous Superlinear Leverage Escalation for PI >= 6.0
     df['superlinear_pi'] = np.where(df['pressure_index'] >= 6.0, (df['pressure_index'] / 6.0) ** 1.20, 1.0)
@@ -79,7 +84,23 @@ def run_clutch_ranking_engine():
     df['deliv_w_bat'] = df['season_weight'] * df['comp_quality'] * df['match_importance_weight'] * df['chase_multiplier'] * df['kappa_bat'] * df['superlinear_pi']
     df['deliv_w_bowl'] = df['season_weight'] * df['comp_quality'] * df['match_importance_weight'] * df['chase_multiplier'] * df['kappa_bowl'] * df['superlinear_pi']
 
+    # Granular Bowling Style (Calibration 11)
+    def classify_bowler_style(bt):
+        if pd.isna(bt): return 'RAP'
+        bt = str(bt).lower()
+        if 'left-arm leg' in bt or 'chinaman' in bt or 'wrist' in bt or 'leg-break' in bt:
+            return 'WristSpin'
+        elif 'offbreak' in bt or 'orthodox' in bt or 'finger' in bt:
+            return 'FingerSpin'
+        elif 'left-arm' in bt:
+            return 'LAP'
+        else:
+            return 'RAP'
+
+    df['bowl_style_gran'] = df['bowling_type'].apply(classify_bowler_style)
+
     h_hp = df[df['pressure_index'] >= 6.0].copy()
+    low_hp = df[df['pressure_index'] < 4.5].copy()
 
     # Match-to-Match Consistency Telemetry (CV calculation)
     match_bat = h_hp[h_hp['is_legal_ball'] == 1].groupby(['striker_id', 'match_id']).agg(
@@ -117,10 +138,17 @@ def run_clutch_ranking_engine():
     h_hp['w_balls_bw'] = h_hp['is_legal_ball'] * h_hp['deliv_w_bowl']
     h_hp['w_runs_bw'] = h_hp['ball_total_runs'] * h_hp['deliv_w_bowl']
     h_hp['w_wkts_bw'] = h_hp['quality_bowler_wkt'] * h_hp['deliv_w_bowl']
+    h_hp['w_clean_wkts_bw'] = h_hp['is_clean_wkt'] * h_hp['deliv_w_bowl']
     h_hp['w_dots_bw'] = h_hp['is_dot'] * h_hp['deliv_w_bowl']
     h_hp['w_bounds_bw'] = h_hp['is_boundary'] * h_hp['deliv_w_bowl']
     h_hp['w_surplus_bw'] = h_hp['runs_saved_vs_par'] * h_hp['deliv_w_bowl']
     h_hp['w_wpa_bw'] = h_hp['delta_wp_bowl'] * h_hp['deliv_w_bowl']
+
+    # Platoon splits: vs RHB vs LHB (Calibration 11)
+    h_hp['w_balls_rhb'] = (h_hp['batting_type'] == 'RHB') * h_hp['w_balls_bw']
+    h_hp['w_runs_rhb'] = (h_hp['batting_type'] == 'RHB') * h_hp['w_runs_bw']
+    h_hp['w_balls_lhb'] = (h_hp['batting_type'] == 'LHB') * h_hp['w_balls_bw']
+    h_hp['w_runs_lhb'] = (h_hp['batting_type'] == 'LHB') * h_hp['w_runs_bw']
 
     bowl_summary = h_hp.groupby(['bowler_id', 'bowler_name']).agg(
         pressure_matches=('match_id', 'nunique'),
@@ -131,10 +159,15 @@ def run_clutch_ranking_engine():
         eff_balls=('w_balls_bw', 'sum'),
         eff_runs=('w_runs_bw', 'sum'),
         eff_wkts=('w_wkts_bw', 'sum'),
+        eff_clean_wkts=('w_clean_wkts_bw', 'sum'),
         eff_dots=('w_dots_bw', 'sum'),
         eff_bounds=('w_bounds_bw', 'sum'),
         eff_surplus=('w_surplus_bw', 'sum'),
         eff_wpa=('w_wpa_bw', 'sum'),
+        eff_balls_rhb=('w_balls_rhb', 'sum'),
+        eff_runs_rhb=('w_runs_rhb', 'sum'),
+        eff_balls_lhb=('w_balls_lhb', 'sum'),
+        eff_runs_lhb=('w_runs_lhb', 'sum'),
     ).reset_index()
 
     bowl_summary['b26_balls'] = bowl_summary['bowler_id'].map(balls_26_bowl).fillna(0)
@@ -161,6 +194,25 @@ def run_clutch_ranking_engine():
     bowl_summary['rec_clutch_sr'] = bowl_summary['eff_balls'] / np.maximum(bowl_summary['eff_wkts'], 1)
     bowl_summary['rec_clutch_bowl_avg'] = bowl_summary['eff_runs'] / np.maximum(bowl_summary['eff_wkts'], 1)
     bowl_summary['shrunk_bowl_avg'] = (bowl_summary['eff_runs'] + K_WKTS * lg_bowl_avg) / (bowl_summary['eff_wkts'] + K_WKTS)
+
+    # Calibration 10: Fielding-Independent Pitching (xFIP) & Clean Wicket Rate Factor
+    lg_clean_pct = bowl_summary['eff_clean_wkts'].sum() / np.maximum(bowl_summary['eff_wkts'].sum(), 1)
+    bowl_summary['shrunk_clean_wkt_pct'] = (bowl_summary['eff_clean_wkts'] + 5.0 * lg_clean_pct) / (bowl_summary['eff_wkts'] + 5.0)
+    bowl_summary['xfip_factor'] = 1.0 + 0.08 * np.clip((bowl_summary['shrunk_clean_wkt_pct'] - lg_clean_pct) / lg_clean_pct, -1.0, 1.0)
+
+    # Calibration 11: Platoon Neutrality Factor (Bowlers vs RHB/LHB)
+    bowl_summary['econ_rhb'] = (bowl_summary['eff_runs_rhb'] / np.maximum(bowl_summary['eff_balls_rhb'], 1.0)) * 6.0
+    bowl_summary['econ_lhb'] = (bowl_summary['eff_runs_lhb'] / np.maximum(bowl_summary['eff_balls_lhb'], 1.0)) * 6.0
+    bowl_summary['platoon_split'] = np.abs(bowl_summary['econ_rhb'] - bowl_summary['econ_lhb'])
+    bowl_summary['platoon_neutrality_factor'] = 1.0 + 0.05 * np.clip((2.0 - bowl_summary['platoon_split']) / 2.0, -1.0, 1.0)
+
+    # Calibration 12: Scoreboard Pressure Elasticity (Bowlers)
+    b_low = low_hp.groupby('bowler_id').agg(low_balls=('is_legal_ball', 'sum'), low_runs=('ball_total_runs', 'sum'))
+    b_low['low_econ'] = (b_low['low_runs'] / np.maximum(b_low['low_balls'], 1)) * 6.0
+    bowl_summary = bowl_summary.merge(b_low, on='bowler_id', how='left').fillna({'low_balls': 0, 'low_runs': 0, 'low_econ': 8.5})
+    bowl_summary['raw_elasticity'] = (bowl_summary['low_econ'] - bowl_summary['rec_clutch_econ']) / np.maximum(bowl_summary['low_econ'], 6.0)
+    bowl_summary['shrunk_elasticity'] = (bowl_summary['eff_balls'] / (bowl_summary['eff_balls'] + 60.0)) * bowl_summary['raw_elasticity']
+    bowl_summary['elasticity_factor'] = 1.0 + 0.05 * np.clip(bowl_summary['shrunk_elasticity'], -0.30, 0.30)
 
     all_bowl = df.groupby('bowler_id').agg(
         all_balls=('is_legal_ball', 'sum'),
@@ -200,7 +252,7 @@ def run_clutch_ranking_engine():
 
     raw_quality_bowl = norm_dot * 0.25 + norm_avoid * 0.20 + norm_surplus * 0.20 + norm_strike * 0.20 + norm_bowl_avg * 0.15
 
-    # 350 effective balls required for full confidence (calibrated for superlinear volume)
+    # 350 effective balls required for full confidence (scaled for superlinear volume)
     bowl_summary['sample_confidence'] = np.clip(bowl_summary['eff_balls'] / 350.0, 0.0, 1.0)
     bowl_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bowl_summary['eff_balls'] - 350.0) / 450.0, 0.0, 1.0)
 
@@ -236,11 +288,13 @@ def run_clutch_ranking_engine():
     bowl_summary['cv_econ'] = bowl_summary['bowler_id'].map(bowl_cv_map).fillna(0.45)
     bowl_summary['stability_factor'] = 1.0 + 0.10 * np.clip((0.45 - bowl_summary['cv_econ']) / 0.20, -1.0, 1.0)
 
+    # Composite Score with Calibrations 10, 11 & 12
     bowl_summary['composite_score_a'] = (
         raw_quality_bowl * bowl_summary['sample_confidence'] * bowl_summary['form_factor'] *
         bowl_summary['durability_bonus'] * bowl_summary['reg_factor'] *
         bowl_summary['continuity_factor'] * bowl_summary['pedigree_bonus'] *
-        bowl_summary['stability_factor']
+        bowl_summary['stability_factor'] * bowl_summary['xfip_factor'] *
+        bowl_summary['platoon_neutrality_factor'] * bowl_summary['elasticity_factor']
     )
     bowl_summary['composite_score_b'] = bowl_summary['composite_score_a']
 
@@ -267,11 +321,10 @@ def run_clutch_ranking_engine():
     h_hp['w_non_bound_balls'] = h_hp['is_non_boundary'] * h_hp['deliv_w_bat']
     h_hp['w_non_bound_runs'] = h_hp['non_boundary_runs'] * h_hp['deliv_w_bat']
 
-    # Pace vs spin splits
-    h_hp['w_balls_spin'] = (h_hp['pace_or_spin'] == 'Spin') * h_hp['w_balls_bat']
-    h_hp['w_runs_spin'] = (h_hp['pace_or_spin'] == 'Spin') * h_hp['w_runs_bat']
-    h_hp['w_balls_pace'] = (h_hp['pace_or_spin'] == 'Pace') * h_hp['w_balls_bat']
-    h_hp['w_runs_pace'] = (h_hp['pace_or_spin'] == 'Pace') * h_hp['w_runs_bat']
+    # Granular Matchup Splits: RAP, LAP, WristSpin, FingerSpin (Calibration 11)
+    for style in ['RAP', 'LAP', 'WristSpin', 'FingerSpin']:
+        h_hp[f'w_balls_{style}'] = (h_hp['bowl_style_gran'] == style) * h_hp['w_balls_bat']
+        h_hp[f'w_runs_{style}'] = (h_hp['bowl_style_gran'] == style) * h_hp['w_runs_bat']
 
     bat_summary = h_hp.groupby(['striker_id', 'striker_name']).agg(
         pressure_matches=('match_id', 'nunique'),
@@ -287,14 +340,18 @@ def run_clutch_ranking_engine():
         eff_dots=('w_dots_bat', 'sum'),
         eff_nb_balls=('w_non_bound_balls', 'sum'),
         eff_nb_runs=('w_non_bound_runs', 'sum'),
-        spin_balls=('w_balls_spin', 'sum'),
-        spin_runs=('w_runs_spin', 'sum'),
-        pace_balls=('w_balls_pace', 'sum'),
-        pace_runs=('w_runs_pace', 'sum'),
+        eff_balls_rap=('w_balls_RAP', 'sum'),
+        eff_runs_rap=('w_runs_RAP', 'sum'),
+        eff_balls_lap=('w_balls_LAP', 'sum'),
+        eff_runs_lap=('w_runs_LAP', 'sum'),
+        eff_balls_wrist=('w_balls_WristSpin', 'sum'),
+        eff_runs_wrist=('w_runs_WristSpin', 'sum'),
+        eff_balls_finger=('w_balls_FingerSpin', 'sum'),
+        eff_runs_finger=('w_runs_FingerSpin', 'sum'),
     ).reset_index()
 
-    bat_summary['clutch_sr_vs_spin'] = (bat_summary['spin_runs'] / np.maximum(bat_summary['spin_balls'], 1)) * 100.0
-    bat_summary['clutch_sr_vs_pace'] = (bat_summary['pace_runs'] / np.maximum(bat_summary['pace_balls'], 1)) * 100.0
+    bat_summary['clutch_sr_vs_spin'] = ((bat_summary['eff_runs_wrist'] + bat_summary['eff_runs_finger']) / np.maximum(bat_summary['eff_balls_wrist'] + bat_summary['eff_balls_finger'], 1)) * 100.0
+    bat_summary['clutch_sr_vs_pace'] = ((bat_summary['eff_runs_rap'] + bat_summary['eff_runs_lap']) / np.maximum(bat_summary['eff_balls_rap'] + bat_summary['eff_balls_lap'], 1)) * 100.0
 
     bat_summary['b26_balls'] = bat_summary['striker_id'].map(balls_26_bat).fillna(0)
     bat_summary['b26_runs'] = bat_summary['striker_id'].map(runs_26_bat).fillna(0)
@@ -325,6 +382,22 @@ def run_clutch_ranking_engine():
     # Match-to-Match Consistency Factor (Variance Reduction)
     bat_summary['cv_sr'] = bat_summary['striker_id'].map(bat_cv_map).fillna(0.40)
     bat_summary['stability_factor'] = 1.0 + 0.10 * np.clip((0.40 - bat_summary['cv_sr']) / 0.20, -1.0, 1.0)
+
+    # Calibration 11: Matchup Granularity & Versatility Factor (Batters)
+    for style in ['rap', 'lap', 'wrist', 'finger']:
+        bat_summary[f'sr_{style}'] = (bat_summary[f'eff_runs_{style}'] * 100.0 + 30.0 * bat_summary['shrunk_rec_sr']) / (bat_summary[f'eff_balls_{style}'] + 30.0)
+    
+    bat_summary['min_style_sr'] = bat_summary[['sr_rap', 'sr_lap', 'sr_wrist', 'sr_finger']].min(axis=1)
+    bat_summary['versatility_ratio'] = bat_summary['min_style_sr'] / np.maximum(bat_summary['shrunk_rec_sr'], 120.0)
+    bat_summary['versatility_factor'] = 1.0 + 0.06 * np.clip((bat_summary['versatility_ratio'] - 0.85) / 0.15, -1.0, 1.0)
+
+    # Calibration 12: Scoreboard Pressure Elasticity (Batters)
+    bat_low = low_hp.groupby('striker_id').agg(low_balls=('is_legal_ball', 'sum'), low_runs=('runs', 'sum'))
+    bat_low['low_sr'] = (bat_low['low_runs'] / np.maximum(bat_low['low_balls'], 1)) * 100.0
+    bat_summary = bat_summary.merge(bat_low, on='striker_id', how='left').fillna({'low_balls': 0, 'low_runs': 0, 'low_sr': 130.0})
+    bat_summary['raw_elasticity'] = (bat_summary['rec_clutch_sr'] - bat_summary['low_sr']) / np.maximum(bat_summary['low_sr'], 100.0)
+    bat_summary['shrunk_elasticity'] = (bat_summary['eff_balls'] / (bat_summary['eff_balls'] + 60.0)) * bat_summary['raw_elasticity']
+    bat_summary['elasticity_factor'] = 1.0 + 0.05 * np.clip(bat_summary['shrunk_elasticity'], -0.30, 0.30)
 
     all_bat = df.groupby('striker_id').agg(
         all_balls=('is_legal_ball', 'sum'),
@@ -419,12 +492,14 @@ def run_clutch_ranking_engine():
 
     bat_summary['archetype'] = bat_summary.apply(get_refined_bat_archetype, axis=1)
 
+    # Composite Score with Calibrations 10, 11 & 12
     bat_summary['composite_score_a'] = (
         raw_quality_bat * bat_summary['sample_confidence'] * bat_summary['form_factor'] *
         bat_summary['durability_bonus'] * bat_summary['reg_factor'] *
         bat_summary['continuity_factor'] * bat_summary['pedigree_bonus'] *
         bat_summary['dot_suppression_factor'] * bat_summary['stability_factor'] *
-        bat_summary['non_bound_factor']
+        bat_summary['non_bound_factor'] * bat_summary['versatility_factor'] *
+        bat_summary['elasticity_factor']
     )
     bat_summary['composite_score_b'] = bat_summary['composite_score_a']
 
@@ -442,7 +517,7 @@ def run_clutch_ranking_engine():
     # Save parquets
     bat_summary.to_parquet("data/player_clutch_batting.parquet", index=False)
     bowl_summary.to_parquet("data/player_clutch_bowling.parquet", index=False)
-    print("--> Successfully updated and saved fully calibrated clutch ratings with Calibrations 6, 7 & 8!")
+    print("--> Successfully updated and saved fully calibrated clutch ratings with Calibrations 10, 11 & 12!")
 
 if __name__ == '__main__':
     run_clutch_ranking_engine()
