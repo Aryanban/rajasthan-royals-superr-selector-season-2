@@ -121,21 +121,47 @@ def run_clutch_ranking_engine():
     # Proven Clutch Durability / Experience Scaling: +20% bonus for seasoned workhorses (180 to 480+ balls)
     bowl_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bowl_summary['eff_balls'] - 180.0) / 300.0, 0.0, 1.0)
 
+    # Multi-season continuity and pedigree
+    ipl_deliv = df[df['comp_name'].str.contains('IPL', na=False)]
+    bowl_seasons = ipl_deliv.groupby('bowler_id')['comp_name'].nunique().to_dict()
+    bowl_24_25 = ipl_deliv[ipl_deliv['comp_name'].isin(['IPL 2024', 'IPL 2025'])].groupby('bowler_id')['is_legal_ball'].sum().to_dict()
+    bowl_summary['ipl_seasons'] = bowl_summary['bowler_id'].map(bowl_seasons).fillna(0)
+    bowl_summary['balls_24_25'] = bowl_summary['bowler_id'].map(bowl_24_25).fillna(0)
+
+    def get_bowl_continuity(row):
+        if row['b26_balls'] >= 30 and row['balls_24_25'] == 0:
+            if row['ipl_seasons'] > 1: # Absent during 2024-2025 hiatus (Holder)
+                return 0.80
+        return 1.00
+
+    bowl_summary['continuity_factor'] = bowl_summary.apply(get_bowl_continuity, axis=1)
+    bowl_summary['pedigree_bonus'] = 1.0 + 0.05 * np.clip(bowl_summary['ipl_seasons'] - 1.0, 0.0, 3.0)
+    bowl_summary['reg_factor'] = np.clip(bowl_summary['b26_balls'] / 140.0, 0.70, 1.0)
+
     def get_bowl_factor(row):
-        if row['b26_balls'] >= 20:
+        if row['b26_balls'] >= 140:
             if row['b26_econ'] > 11.0:
                 return 0.70 # Severe collapse (Harshal Patel 12.56)
             elif row['b26_econ'] > 10.0:
                 return 0.85
             elif row['b26_econ'] < 8.0:
-                return 1.10 # Surge bonus (Narine 6.91)
+                return 1.10 # Surge bonus (Narine 6.91, Bhuvi 7.76)
+            else:
+                return 1.00
+        elif row['b26_balls'] >= 40:
+            if row['b26_econ'] > 11.0:
+                return 0.70
             else:
                 return 1.00
         else:
             return 0.60 # Inactive in 2026 IPL (Mustafizur, Wood, Gowtham)
 
     bowl_summary['form_factor'] = bowl_summary.apply(get_bowl_factor, axis=1)
-    bowl_summary['composite_score_a'] = raw_quality_bowl * bowl_summary['sample_confidence'] * bowl_summary['form_factor'] * bowl_summary['durability_bonus']
+    bowl_summary['composite_score_a'] = (
+        raw_quality_bowl * bowl_summary['sample_confidence'] * bowl_summary['form_factor'] *
+        bowl_summary['durability_bonus'] * bowl_summary['reg_factor'] *
+        bowl_summary['continuity_factor'] * bowl_summary['pedigree_bonus']
+    )
     bowl_summary['composite_score_b'] = bowl_summary['composite_score_a']
 
     # Backwards compatibility
@@ -211,19 +237,45 @@ def run_clutch_ranking_engine():
     # Proven Clutch Durability / Experience Scaling: +20% bonus for seasoned workhorses (180 to 480+ balls)
     bat_summary['durability_bonus'] = 1.0 + 0.20 * np.clip((bat_summary['eff_balls'] - 180.0) / 300.0, 0.0, 1.0)
 
+    # Multi-season continuity and pedigree
+    ipl_deliv = df[df['comp_name'].str.contains('IPL', na=False)]
+    bat_seasons = ipl_deliv.groupby('striker_id')['comp_name'].nunique().to_dict()
+    bat_24_25 = ipl_deliv[ipl_deliv['comp_name'].isin(['IPL 2024', 'IPL 2025'])].groupby('striker_id')['is_legal_ball'].sum().to_dict()
+    bat_summary['ipl_seasons'] = bat_summary['striker_id'].map(bat_seasons).fillna(0)
+    bat_summary['balls_24_25'] = bat_summary['striker_id'].map(bat_24_25).fillna(0)
+
+    def get_bat_continuity(row):
+        if row['b26_balls'] >= 30 and row['balls_24_25'] == 0:
+            if row['ipl_seasons'] > 1: # Absent during hiatus
+                return 0.80
+        return 1.00
+
+    bat_summary['continuity_factor'] = bat_summary.apply(get_bat_continuity, axis=1)
+    bat_summary['pedigree_bonus'] = 1.0 + 0.05 * np.clip(bat_summary['ipl_seasons'] - 1.0, 0.0, 3.0)
+    bat_summary['reg_factor'] = np.clip(bat_summary['b26_balls'] / 140.0, 0.70, 1.0)
+
     def get_bat_factor(row):
-        if row['b26_balls'] >= 25:
+        if row['b26_balls'] >= 120:
             if row['b26_sr'] >= 200.0:
                 return 1.10 # Surge bonus (Arya, Abhishek, Patidar, Sooryavanshi)
             elif row['b26_sr'] < 160.0:
                 return 0.80 # Slump penalty (Suryakumar Yadav 157)
             else:
                 return 1.00
+        elif row['b26_balls'] >= 40:
+            if row['b26_sr'] < 150.0:
+                return 0.80
+            else:
+                return 1.00
         else:
             return 0.60 # Inactive in 2026 IPL (Russell, Jake Fraser-McGurk)
 
     bat_summary['form_factor'] = bat_summary.apply(get_bat_factor, axis=1)
-    bat_summary['composite_score_a'] = raw_quality_bat * bat_summary['sample_confidence'] * bat_summary['form_factor'] * bat_summary['durability_bonus']
+    bat_summary['composite_score_a'] = (
+        raw_quality_bat * bat_summary['sample_confidence'] * bat_summary['form_factor'] *
+        bat_summary['durability_bonus'] * bat_summary['reg_factor'] *
+        bat_summary['continuity_factor'] * bat_summary['pedigree_bonus']
+    )
     bat_summary['composite_score_b'] = bat_summary['composite_score_a']
 
     # Backwards compatibility
