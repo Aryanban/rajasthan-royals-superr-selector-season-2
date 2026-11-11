@@ -24,6 +24,10 @@ def run_clutch_ranking_engine():
     df['season_weight'] = np.exp(-LAMBDA * (MAX_YEAR - df['year']))
     df['deliv_w'] = df['season_weight'] * df['comp_quality']
 
+    # Wicket attribution
+    df['is_striker_out'] = (df['dismissed_player_id'] == df['striker_id']).astype(int)
+    df['is_bowler_wkt'] = (df['is_wicket'] & ~df['dismissal_type'].isin(['RunOut', 'Retire Out', 'Obstracting the field', 'Obstructing the field'])).astype(int)
+
     # Phase par benchmarking strictly on IPL environment
     ipl_df = df[df['is_ipl']].copy()
     ipl_df['phase'] = np.where(ipl_df['overid'] < 6, 'powerplay', np.where(ipl_df['overid'] < 16, 'middle', 'death'))
@@ -38,14 +42,17 @@ def run_clutch_ranking_engine():
     ipl_26 = h_hp[(h_hp['is_ipl']) & (h_hp['year'] == 2026)]
     balls_26_bat = ipl_26.groupby('striker_id')['is_legal_ball'].sum().to_dict()
     runs_26_bat = ipl_26.groupby('striker_id')['runs'].sum().to_dict()
+    outs_26_bat = ipl_26.groupby('striker_id')['is_striker_out'].sum().to_dict()
     balls_26_bowl = ipl_26.groupby('bowler_id')['is_legal_ball'].sum().to_dict()
     runs_26_bowl = ipl_26.groupby('bowler_id')['ball_total_runs'].sum().to_dict()
+    wkts_26_bowl = ipl_26.groupby('bowler_id')['is_bowler_wkt'].sum().to_dict()
 
     # =========================================================================
     # 1. BOWLERS
     # =========================================================================
     h_hp['w_balls_bw'] = h_hp['is_legal_ball'] * h_hp['deliv_w']
     h_hp['w_runs_bw'] = h_hp['ball_total_runs'] * h_hp['deliv_w']
+    h_hp['w_wkts_bw'] = h_hp['is_bowler_wkt'] * h_hp['deliv_w']
     h_hp['w_dots_bw'] = h_hp['is_dot'] * h_hp['deliv_w']
     h_hp['w_bounds_bw'] = h_hp['is_boundary'] * h_hp['deliv_w']
     h_hp['w_surplus_bw'] = h_hp['runs_saved_vs_par'] * h_hp['deliv_w']
@@ -55,10 +62,11 @@ def run_clutch_ranking_engine():
         pressure_matches=('match_id', 'nunique'),
         total_clutch_balls=('is_legal_ball', 'sum'),
         total_clutch_runs=('ball_total_runs', 'sum'),
-        total_clutch_wickets=('is_wicket', 'sum'),
+        total_clutch_wickets=('is_bowler_wkt', 'sum'),
         total_clutch_wpa=('delta_wp_bowl', 'sum'),
         eff_balls=('w_balls_bw', 'sum'),
         eff_runs=('w_runs_bw', 'sum'),
+        eff_wkts=('w_wkts_bw', 'sum'),
         eff_dots=('w_dots_bw', 'sum'),
         eff_bounds=('w_bounds_bw', 'sum'),
         eff_surplus=('w_surplus_bw', 'sum'),
@@ -67,18 +75,29 @@ def run_clutch_ranking_engine():
 
     bowl_summary['b26_balls'] = bowl_summary['bowler_id'].map(balls_26_bowl).fillna(0)
     bowl_summary['b26_runs'] = bowl_summary['bowler_id'].map(runs_26_bowl).fillna(0)
+    bowl_summary['b26_wkts'] = bowl_summary['bowler_id'].map(wkts_26_bowl).fillna(0)
     bowl_summary['b26_econ'] = (bowl_summary['b26_runs'] / np.maximum(bowl_summary['b26_balls'], 1)) * 6.0
 
     K_SHRINKAGE = 40.0
     lg_dot = bowl_summary['eff_dots'].sum() / np.maximum(bowl_summary['eff_balls'].sum(), 1)
     lg_bound = bowl_summary['eff_bounds'].sum() / np.maximum(bowl_summary['eff_balls'].sum(), 1)
     lg_surplus = bowl_summary['eff_surplus'].sum() / np.maximum(bowl_summary['eff_balls'].sum(), 1)
+    lg_wkt_rate = (bowl_summary['eff_wkts'].sum() / np.maximum(bowl_summary['eff_balls'].sum(), 1)) * 100.0
+    lg_bowl_avg = bowl_summary['eff_runs'].sum() / np.maximum(bowl_summary['eff_wkts'].sum(), 1)
 
+    K_WKTS = 5.0
     bowl_summary['shrunk_dot'] = (bowl_summary['eff_dots'] + K_SHRINKAGE * lg_dot) / (bowl_summary['eff_balls'] + K_SHRINKAGE)
     bowl_summary['shrunk_avoid'] = (bowl_summary['eff_balls'] - bowl_summary['eff_bounds'] + K_SHRINKAGE * (1.0 - lg_bound)) / (bowl_summary['eff_balls'] + K_SHRINKAGE)
     bowl_summary['shrunk_surplus'] = (bowl_summary['eff_surplus'] + K_SHRINKAGE * lg_surplus) / (bowl_summary['eff_balls'] + K_SHRINKAGE)
     bowl_summary['rec_clutch_econ'] = (bowl_summary['eff_runs'] / np.maximum(bowl_summary['eff_balls'], 1)) * 6.0
     bowl_summary['clutch_economy'] = (bowl_summary['total_clutch_runs'] / np.maximum(bowl_summary['total_clutch_balls'], 1)) * 6.0
+
+    # Bowling Strike Rate (Balls per Wicket) & Bowling Average (Runs per Wicket)
+    bowl_summary['shrunk_wkt_rate'] = (bowl_summary['eff_wkts'] * 100.0 + K_SHRINKAGE * (lg_wkt_rate / 100.0) * 100.0) / (bowl_summary['eff_balls'] + K_SHRINKAGE)
+    bowl_summary['shrunk_balls_per_wkt'] = 100.0 / np.maximum(bowl_summary['shrunk_wkt_rate'], 1e-4)
+    bowl_summary['rec_clutch_sr'] = bowl_summary['eff_balls'] / np.maximum(bowl_summary['eff_wkts'], 1)
+    bowl_summary['rec_clutch_bowl_avg'] = bowl_summary['eff_runs'] / np.maximum(bowl_summary['eff_wkts'], 1)
+    bowl_summary['shrunk_bowl_avg'] = (bowl_summary['eff_runs'] + K_WKTS * lg_bowl_avg) / (bowl_summary['eff_wkts'] + K_WKTS)
 
     all_bowl = df.groupby('bowler_id').agg(
         all_balls=('is_legal_ball', 'sum'),
@@ -113,7 +132,11 @@ def run_clutch_ranking_engine():
     norm_dot = np.clip((bowl_summary['shrunk_dot'] - 0.25) / 0.15 * 10.0, 0.0, 10.0)
     norm_avoid = np.clip((bowl_summary['shrunk_avoid'] - 0.75) / 0.15 * 10.0, 0.0, 10.0)
     norm_surplus = np.clip((bowl_summary['shrunk_surplus'] + 0.15) / 0.45 * 10.0, 0.0, 10.0)
-    raw_quality_bowl = norm_dot * 0.45 + norm_avoid * 0.35 + norm_surplus * 0.20
+    norm_strike = np.clip((bowl_summary['shrunk_wkt_rate'] - 3.33) / 5.0 * 10.0, 0.0, 10.0)
+    norm_bowl_avg = np.clip((42.0 - bowl_summary['shrunk_bowl_avg']) / 24.0 * 10.0, 0.0, 10.0)
+
+    # Multi-dimensional Bowling Quality: 25% Dot, 20% Avoid, 20% Surplus/Econ, 20% Strike Rate, 15% Bowling Avg
+    raw_quality_bowl = norm_dot * 0.25 + norm_avoid * 0.20 + norm_surplus * 0.20 + norm_strike * 0.20 + norm_bowl_avg * 0.15
 
     # 180 effective balls required for full confidence (prevents small-sample outliers like Saurabh Dubey)
     bowl_summary['sample_confidence'] = np.clip(bowl_summary['eff_balls'] / 180.0, 0.0, 1.0)
@@ -180,25 +203,35 @@ def run_clutch_ranking_engine():
     # =========================================================================
     h_hp['w_balls_bat'] = h_hp['is_legal_ball'] * h_hp['deliv_w']
     h_hp['w_runs_bat'] = h_hp['runs'] * h_hp['deliv_w']
+    h_hp['w_outs_bat'] = h_hp['is_striker_out'] * h_hp['deliv_w']
     h_hp['w_wpa_bat'] = h_hp['delta_wp_bat'] * h_hp['deliv_w']
 
     bat_summary = h_hp.groupby(['striker_id', 'striker_name']).agg(
         pressure_matches=('match_id', 'nunique'),
         total_clutch_balls=('is_legal_ball', 'sum'),
         total_clutch_runs=('runs', 'sum'),
+        total_clutch_outs=('is_striker_out', 'sum'),
         total_clutch_wpa=('delta_wp_bat', 'sum'),
         eff_balls=('w_balls_bat', 'sum'),
         eff_runs=('w_runs_bat', 'sum'),
+        eff_outs=('w_outs_bat', 'sum'),
         eff_wpa=('w_wpa_bat', 'sum'),
     ).reset_index()
 
     bat_summary['b26_balls'] = bat_summary['striker_id'].map(balls_26_bat).fillna(0)
     bat_summary['b26_runs'] = bat_summary['striker_id'].map(runs_26_bat).fillna(0)
+    bat_summary['b26_outs'] = bat_summary['striker_id'].map(outs_26_bat).fillna(0)
     bat_summary['b26_sr'] = (bat_summary['b26_runs'] / np.maximum(bat_summary['b26_balls'], 1)) * 100.0
 
     lg_sr = (bat_summary['eff_runs'].sum() / np.maximum(bat_summary['eff_balls'].sum(), 1)) * 100.0
     bat_summary['rec_clutch_sr'] = (bat_summary['eff_runs'] / np.maximum(bat_summary['eff_balls'], 1)) * 100.0
     bat_summary['shrunk_rec_sr'] = (bat_summary['eff_runs'] * 100.0 + K_SHRINKAGE * lg_sr) / (bat_summary['eff_balls'] + K_SHRINKAGE)
+
+    # Batting Average & Wicket Preservation under high pressure
+    lg_avg = bat_summary['eff_runs'].sum() / np.maximum(bat_summary['eff_outs'].sum(), 1)
+    K_OUTS = 5.0
+    bat_summary['rec_clutch_avg'] = bat_summary['eff_runs'] / np.maximum(bat_summary['eff_outs'], 1)
+    bat_summary['shrunk_rec_avg'] = (bat_summary['eff_runs'] + K_OUTS * lg_avg) / (bat_summary['eff_outs'] + K_OUTS)
     bat_summary['wpa_rate_per_100'] = (bat_summary['eff_wpa'] / np.maximum(bat_summary['eff_balls'], 1)) * 100.0
 
     all_bat = df.groupby('striker_id').agg(
@@ -228,8 +261,11 @@ def run_clutch_ranking_engine():
     bat_summary['archetype'] = bat_summary['median_batting_order'].apply(get_bat_archetype)
 
     norm_sr = np.clip((bat_summary['shrunk_rec_sr'] - 120.0) / 8.0, 0.0, 10.0)
+    norm_avg = np.clip((bat_summary['shrunk_rec_avg'] - 15.0) / 3.0, 0.0, 10.0)
     norm_wpa = np.clip((bat_summary['wpa_rate_per_100'] + 0.5) * 4.0, 0.0, 10.0)
-    raw_quality_bat = norm_sr * 0.70 + norm_wpa * 0.30
+
+    # Multi-dimensional Batting Quality: 45% Strike Rate, 30% Batting Average, 25% Win Probability Added
+    raw_quality_bat = norm_sr * 0.45 + norm_avg * 0.30 + norm_wpa * 0.25
 
     # 180 effective balls required for full confidence (prevents small-sample outliers)
     bat_summary['sample_confidence'] = np.clip(bat_summary['eff_balls'] / 180.0, 0.0, 1.0)
